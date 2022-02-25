@@ -14,4 +14,6 @@ get() (
     gsutil -m cp -n "$get" .
 )
 
-get 'gs://covid-public-data/csv/incidence_202*.csv' 'incidence/'
+get 'gs://covid-public-data/csv/incidence_202*.csv' 'incidence/' &&
+get 'gs://covid-public-data/csv/RevisedStats/prevalence_history_202*.csv' \
+        'prevalence_history/'
