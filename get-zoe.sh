@@ -16,4 +16,6 @@ get() (
 
 get 'gs://covid-public-data/csv/incidence_202*.csv' 'incidence/' &&
 get 'gs://covid-public-data/csv/RevisedStats/prevalence_history_202*.csv' \
-        'prevalence_history/'
+        'prevalence_history/' &&
+get 'gs://covid-public-data/csv/RevisedStats/incidence_history_202*.csv' \
+        'incidence_history/'
