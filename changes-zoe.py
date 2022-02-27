@@ -54,19 +54,18 @@ def changes(indir, prefix, outfile):
             regions_set = set(regions)
             f.seek(0)
 
+            assert f.readline().rstrip() == head
+            heads = head.split(',')
+            shift = 0
+            if not heads[0]:
+                shift = 1
+            heads = heads[shift:]
+            assert heads[0] == 'date'
+            assert heads[1] == 'region'
+
             # Optimized inner loop ahead
-            slow_check = True
+            slow_check = False
             if slow_check:
-                assert f.readline().rstrip() == head
-                heads = head.split(',')
-
-                shift = 0
-                if not heads[0]:
-                    shift = 1
-                heads = heads[shift:]
-                assert heads[0] == 'date'
-                assert heads[1] == 'region'
-
                 prev_date = None
                 regions2_set = regions_set
                 while True:
@@ -80,6 +79,11 @@ def changes(indir, prefix, outfile):
                         regions2_set = set()
                         prev_date = date
                     regions2_set.add(region2)
+            else:
+                for line in f:
+                    pass
+                (date, region2, _) = line.split(',', 2+shift)[shift:]
+
             last_date = date
             last_date = last_date.split('-')
             last_date = map(int, last_date)
