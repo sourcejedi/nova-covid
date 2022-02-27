@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 import csv
+import datetime
 
 outdir = Path('out/changes/')
 outdir.mkdir(parents=True, exist_ok=True)
@@ -15,6 +16,7 @@ def changes(indir, prefix, outfile):
     prev_fields = None
     prev_start = None
     prev_regions = None
+    prev_offset = None
     for path in paths:
         print(path)
         name = path.name[prefix_len:-4]
@@ -78,24 +80,36 @@ def changes(indir, prefix, outfile):
                         regions2_set = set()
                         prev_date = date
                     regions2_set.add(region2)
+            last_date = date
+            last_date = last_date.split('-')
+            last_date = map(int, last_date)
+            last_date = datetime.date(*last_date)
+            name_date = [name[:-4], name[-4:-2], name[-2:]]
+            name_date = map(int, name_date)
+            name_date = datetime.date(*name_date)
+            offset = (name_date - last_date).days
         change = False
         if fields != prev_fields:
-            outfile.write(f'{name}:  Fields:      {", ".join(fields)}\n')
+            outfile.write(f'{name}:  Fields:        {", ".join(fields)}\n')
             change = True
         if fields == prev_fields and head != prev_head:
-            outfile.write(f'{name}:  Old headers: {head}\n')
-            outfile.write(f'{name}:  New headers: {head}\n')
+            outfile.write(f'{name}:  Old headers:   {head}\n')
+            outfile.write(f'{name}:  New headers:   {head}\n')
             change = True
         if start != prev_start:
-            outfile.write(f'{name}:  Start date:  {start}\n')
+            outfile.write(f'{name}:  Start date:    {start}\n')
+            change = True
+        if offset != prev_offset:
+            outfile.write(f'{name}:  Offset (days): {offset}\n')
             change = True
         if regions != prev_regions:
-            outfile.write(f'{name}:  Regions:     {", ".join(regions)}\n')
+            outfile.write(f'{name}:  Regions:       {", ".join(regions)}\n')
             change = True
         prev_fields = fields
         prev_head = head
         prev_start = start
         prev_regions = regions
+        prev_offset = offset
         if change:
             outfile.write('\n')
 
