@@ -25,3 +25,7 @@ with open(outdir / 'head_incidence', 'w') as outfile:
 indir = Path('download-zoe/prevalence_history/')
 with open(outdir / 'head_prevalence_history', 'w') as outfile:
     head(indir, 'prevalence_history_', outfile)
+
+indir = Path('download-zoe/incidence_history/')
+with open(outdir / 'head_incidence_history', 'w') as outfile:
+    head(indir, 'incidence_history_', outfile)
