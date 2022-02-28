@@ -7,7 +7,7 @@ set -o xtrace
 
 get() (
     get="$1" &&
-    dir="download-zoe/$2" &&
+    dir="download/$2" &&
 
     mkdir -p "$dir" &&
     cd "$dir" &&
