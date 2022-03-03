@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # Performance log:
 #  1. Switching from csv module parsing to crude split() was a small gain
@@ -23,7 +23,6 @@
 # as if the code for this was updated one day earlier than incidence_history
 # and the public announcement.
 
-import sys
 import csv
 from pathlib import Path
 
