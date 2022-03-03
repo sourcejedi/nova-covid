@@ -120,13 +120,13 @@ def changes(indir, prefix, outfile):
     outfile.write(f'{name}\n')
 
 indir = Path('download/incidence/')
-with open(outdir / 'changes_incidence.txt', 'w') as outfile:
+with open(outdir / 'incidence.txt', 'w') as outfile:
     changes(indir, 'incidence_', outfile)
 
 indir = Path('download/prevalence_history/')
-with open(outdir / 'changes_prevalence_history.txt', 'w') as outfile:
+with open(outdir / 'prevalence_history.txt', 'w') as outfile:
     changes(indir, 'prevalence_history_', outfile)
 
 indir = Path('download/incidence_history/')
-with open(outdir / 'changes_incidence_history.txt', 'w') as outfile:
+with open(outdir / 'incidence_history.txt', 'w') as outfile:
     changes(indir, 'incidence_history_', outfile)
