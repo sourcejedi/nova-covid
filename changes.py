@@ -7,6 +7,68 @@ import datetime
 outdir = Path('out/changes/')
 outdir.mkdir(parents=True, exist_ok=True)
 
+def changes_table(indir, prefix, outfile):
+    paths = list(indir.glob(prefix + '*.csv'))
+    paths.sort()
+    prefix_len = len(prefix)
+
+    prev_head = None
+    prev_fields = None
+    prev_regions = None
+    for path in paths:
+        print(path)
+        name = path.name[prefix_len:-4]
+        with path.open() as f:
+            head = f.readline()
+            assert head
+            head = head.rstrip()
+            assert head
+            f.seek(0)
+
+            read = csv.DictReader(f)
+            fields = read.fieldnames
+            assert fields
+            row = next(read, None)
+            assert row
+            f.seek(0)
+
+            regions = []
+            read = csv.DictReader(f)
+            row = next(read, None)
+            assert row
+            while row:
+                region = row.get('region') or row.get('nhser19nm')
+                assert region
+                assert region not in regions
+                regions.append(region)
+                row = next(read, None)
+            regions.sort()
+            regions_set = set(regions)
+            f.seek(0)
+
+            assert f.readline().rstrip() == head
+            heads = head.split(',')
+
+        change = False
+        if fields != prev_fields:
+            display_fields = [field.replace('\n', ' ') for field in fields]
+            outfile.write(f'{name}:  Fields:        {", ".join(display_fields)}\n')
+            change = True
+        if fields == prev_fields and head != prev_head:
+            outfile.write(f'{name}:  Old headers:   {head}\n')
+            outfile.write(f'{name}:  New headers:   {head}\n')
+            change = True
+        if regions != prev_regions:
+            outfile.write(f'{name}:  Regions:       {", ".join(regions)}\n')
+            change = True
+        prev_fields = fields
+        prev_head = head
+        prev_regions = regions
+        if change:
+            outfile.write('\n')
+
+    outfile.write(f'{name}\n')
+
 def changes(indir, prefix, outfile):
     paths = list(indir.glob(prefix + '*.csv'))
     paths.sort()
@@ -118,6 +180,10 @@ def changes(indir, prefix, outfile):
             outfile.write('\n')
 
     outfile.write(f'{name}\n')
+
+indir = Path('incidence table/')
+with open(outdir / 'incidence table.txt', 'w') as outfile:
+    changes_table(indir, 'incidence table_', outfile)
 
 indir = Path('download/incidence/')
 with open(outdir / 'incidence.txt', 'w') as outfile:
