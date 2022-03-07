@@ -10,8 +10,18 @@ Requirements:
  * python3
  * LibreOffice, or other ODS reader
 
-Index: 
- * `fetch.sh`. Download some ZOE data files (~1GB).
- * `changes.sh`. Find when ZOE data files changed.
- * `tail.sh` + `jump.ods`. Crude, manual spreadsheet to find "jumps", indicating a new method.
- * `prevalence.England.py` + `prevalence.UK.py`. Add up the prevalences for the England / UK regions.
+## Index
+
+`fetch.sh`. Download some ZOE data files (~1GB).
+
+`changes.sh`. Find when ZOE data files changed.
+
+`tail.sh` + `jump.ods`. Crude, manual spreadsheet to find "jumps", indicating a new method.
+
+`prevalence.England.py` + `prevalence.UK.py`. Add up the prevalences for the England / UK regions.
+
+### incidence table
+
+Saved copies of https://covid-assets.joinzoe.com/latest/incidence%20table.csv
+
+DISCLAIMER: I do not own this data.  I cannot vouch for it.  Do not cite these copies in your academic paper!  I am reposting it to help find out about ZOE methods.
