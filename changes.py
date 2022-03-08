@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
+
+# This is starting to get a bit fragile.
+# I.e. it would benefit from having tests.
+
 import os
 from pathlib import Path
 import csv
 import datetime
 
-outdir = Path('out/changes/')
-outdir.mkdir(parents=True, exist_ok=True)
 
 def changes_table(indir, prefix, outfile):
     paths = list(indir.glob(prefix + '*.csv'))
@@ -79,6 +81,8 @@ def changes(indir, prefix, outfile):
     prev_start = None
     prev_regions = None
     prev_offset = None
+    prev_uk_maybe_weighted = None
+    prev_en_maybe_weighted = None
     for path in paths:
         print(path)
         name = path.name[prefix_len:-4]
@@ -118,30 +122,79 @@ def changes(indir, prefix, outfile):
 
             assert f.readline().rstrip() == head
             heads = head.split(',')
-            shift = 0
+            date_field = 0
             if not heads[0]:
-                shift = 1
-            heads = heads[shift:]
-            assert heads[0] == 'date'
-            assert heads[1] == 'region'
+                date_field = 1
+            region_field = date_field + 1
+            assert heads[date_field] == 'date'
+            assert heads[region_field] == 'region'
+
+            try:
+                mid_field = heads.index('pop_mid')
+            except ValueError:
+                try:
+                    mid_field = heads.index('covid_in_pop')
+                except ValueError:
+                    mid_field = heads.index('active_cases')
 
             # Optimized inner loop ahead
-            slow_check = False
-            if slow_check:
+            skip_slow = False
+            if not skip_slow:
+                uk_maybe_weighted = True
+                en_maybe_weighted = True
+                if 'UK' not in regions and 'England' not in regions:
+                    mid_field = None
+
                 prev_date = None
                 regions2_set = regions_set
+                uk_mid = 0
+                en_mid = 0
+                file_uk_mid = 0
+                file_en_mid = 0
                 while True:
                     line = f.readline()
                     if not line:
                         assert regions2_set == regions_set
                         break
-                    (date, region2, _) = line.split(',', 2+shift)[shift:]
+                    line = line.split(',')
+                    date = line[date_field]
+                    region2 = line[region_field]
                     if date != prev_date:
                         assert regions2_set == regions_set
                         regions2_set = set()
+
+                        if mid_field:
+                            if abs(file_en_mid - en_mid) > 0.01:
+                                en_maybe_weighted = False
+                            if abs(file_uk_mid - uk_mid) > 0.01:
+                                uk_maybe_weighted = False
+                            uk_mid = 0
+                            en_mid = 0
                         prev_date = date
                     regions2_set.add(region2)
-            else:
+
+                    # lazy coding: this won't be tested for the last date.
+                    # testing this separately from 'incidence table' was
+                    # probably overkill.  Oh well.
+                    if mid_field:
+                        mid = float(line[mid_field])
+                        if region2 == 'UK':
+                            file_uk_mid = mid
+                        elif region2 == 'England':
+                            file_en_mid = mid
+                        else:
+                            uk_mid += mid
+                            if region2 not in ['Wales', 'Scotland', 'Northern Ireland']:
+                                en_mid += mid
+
+                if 'UK' not in regions:
+                    uk_maybe_weighted = None
+                if 'England' not in regions:
+                    en_maybe_weighted = None
+            else: # skip_slow
+                uk_maybe_weighted = None
+                en_maybe_weighted = None
+
                 for line in f:
                     pass
                 (date, region2, _) = line.split(',', 2+shift)[shift:]
@@ -156,30 +209,42 @@ def changes(indir, prefix, outfile):
             offset = (name_date - last_date).days
         change = False
         if fields != prev_fields:
-            outfile.write(f'{name}:  Fields:        {", ".join(fields)}\n')
+            outfile.write(f'{name}:  Fields:             {", ".join(fields)}\n')
             change = True
         if fields == prev_fields and head != prev_head:
-            outfile.write(f'{name}:  Old headers:   {head}\n')
-            outfile.write(f'{name}:  New headers:   {head}\n')
+            outfile.write(f'{name}:  Old headers:        {head}\n')
+            outfile.write(f'{name}:  New headers:        {head}\n')
             change = True
         if start != prev_start:
-            outfile.write(f'{name}:  Start date:    {start}\n')
+            outfile.write(f'{name}:  Start date:         {start}\n')
             change = True
         if offset != prev_offset:
-            outfile.write(f'{name}:  Offset (days): {offset}\n')
+            outfile.write(f'{name}:  Offset (days):      {offset}\n')
             change = True
         if regions != prev_regions:
-            outfile.write(f'{name}:  Regions:       {", ".join(regions)}\n')
+            outfile.write(f'{name}:  Regions:            {", ".join(regions)}\n')
+            change = True
+        if uk_maybe_weighted != prev_uk_maybe_weighted:
+            outfile.write(f'{name}:  UK region-weighted: {uk_maybe_weighted}\n')
+            change = True
+        if en_maybe_weighted != prev_en_maybe_weighted:
+            outfile.write(f'{name}:  EN region-weighted: {en_maybe_weighted}\n')
             change = True
         prev_fields = fields
         prev_head = head
         prev_start = start
         prev_regions = regions
         prev_offset = offset
+        prev_en_maybe_weighted = en_maybe_weighted
+        prev_uk_maybe_weighted = uk_maybe_weighted
         if change:
             outfile.write('\n')
 
     outfile.write(f'{name}\n')
+
+
+outdir = Path('out/changes/')
+outdir.mkdir(parents=True, exist_ok=True)
 
 indir = Path('incidence table/')
 with open(outdir / 'incidence table.txt', 'w') as outfile:
