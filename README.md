@@ -20,8 +20,10 @@ Requirements:
 
 `prevalence.England.py` + `prevalence.UK.py`. Add up the prevalences for the England / UK regions.
 
-### incidence table
-
-Saved copies of https://covid-assets.joinzoe.com/latest/incidence%20table.csv
+## download-sample/
 
 DISCLAIMER: I do not own this data.  I cannot vouch for it.  Do not cite these copies in your academic paper!  I am reposting it to help find out about ZOE methods.
+
+### download-sample/incidence table/
+
+Saved copies of https://covid-assets.joinzoe.com/latest/incidence%20table.csv

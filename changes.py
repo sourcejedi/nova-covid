@@ -246,7 +246,7 @@ def changes(indir, prefix, outfile):
 outdir = Path('out/changes/')
 outdir.mkdir(parents=True, exist_ok=True)
 
-indir = Path('incidence table/')
+indir = Path('download-sample/incidence table/')
 with open(outdir / 'incidence table.txt', 'w') as outfile:
     changes_table(indir, 'incidence table_', outfile)
 
