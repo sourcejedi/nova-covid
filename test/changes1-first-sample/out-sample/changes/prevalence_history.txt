@@ -1,0 +1,6 @@
+20210209:  Fields:             date, region, active_cases
+20210209:  Start date:         2020-07-01
+20210209:  Offset (days):      0
+20210209:  Regions:            East Midlands, East of England, London, North East, North West, Northern Ireland, Scotland, South East, South West, Wales, West Midlands, Yorkshire and The Humber
+
+20210209

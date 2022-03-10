@@ -1,2 +1,3 @@
-download/
-out/
+/download/
+/out/
+/test/*/out/

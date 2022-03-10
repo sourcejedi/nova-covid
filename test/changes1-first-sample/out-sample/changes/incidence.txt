@@ -1,0 +1,8 @@
+20200705:  Fields:             , date, region, pop_mid, pop_low, pop_up, mil_mid, mil_low, mil_up
+20200705:  Start date:         2020-05-12
+20200705:  Offset (days):      0
+20200705:  Regions:            East of England, England, London, Midlands, North East and Yorkshire, North West, Northern Ireland, Scotland, South East, South West, UK, Wales
+20200705:  UK nation-weighted: True
+20200705:  EN region-weighted: False
+
+20200705
