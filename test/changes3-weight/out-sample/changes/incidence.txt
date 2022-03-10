@@ -4,11 +4,21 @@
 19700102:  Regions:            East of England, England, London, Midlands, North East and Yorkshire, North West, Northern Ireland, Scotland, South East, South West, UK, Wales
 19700102:  UK nation-weighted: True
 19700102:  EN region-weighted: True
+19700102:  suspect EN CI (lo): True
+19700102:  suspect EN CI (up): True
+19700102:  suspect UK CI (lo): True
+19700102:  suspect UK CI (up): True
 
 19700103:  EN region-weighted: False
+19700103:  suspect EN CI (lo): False
+19700103:  suspect EN CI (up): False
 
 19700104:  UK nation-weighted: False
+19700104:  suspect UK CI (lo): False
+19700104:  suspect UK CI (up): False
 
 19700105:  UK nation-weighted: True
+19700105:  suspect UK CI (lo): True
+19700105:  suspect UK CI (up): True
 
 19700105

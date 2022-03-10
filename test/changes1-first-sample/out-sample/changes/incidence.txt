@@ -4,5 +4,9 @@
 20200705:  Regions:            East of England, England, London, Midlands, North East and Yorkshire, North West, Northern Ireland, Scotland, South East, South West, UK, Wales
 20200705:  UK nation-weighted: True
 20200705:  EN region-weighted: False
+20200705:  suspect EN CI (lo): False
+20200705:  suspect EN CI (up): False
+20200705:  suspect UK CI (lo): False
+20200705:  suspect UK CI (up): False
 
 20200705

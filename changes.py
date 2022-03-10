@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# This is starting to get a bit fragile.
-# I.e. it would benefit from having tests.
-
 import os
 from pathlib import Path
 import csv
@@ -83,6 +80,10 @@ def changes(indir, prefix, outfile):
     prev_offset = None
     prev_uk_maybe_weighted = None
     prev_en_maybe_weighted = None
+    prev_en_lo_quirk = None
+    prev_en_up_quirk = None
+    prev_uk_lo_quirk = None
+    prev_uk_up_quirk = None
     for path in paths:
         print(path)
         name = path.name[prefix_len:-4]
@@ -127,14 +128,43 @@ def changes(indir, prefix, outfile):
             if mid_field not in fields:
                 mid_field = 'active_cases'
 
+            lo_field = 'pop_low'
+            if lo_field not in fields:
+                lo_field = 'covid_in_pop_lo'
+            if lo_field not in fields:
+                lo_field = 'covid_in_pop_lolim'
+            if lo_field not in fields:
+                lo_field = None
+            up_field = 'pop_up'
+            if up_field not in fields:
+                up_field = 'covid_in_pop_up'
+            if up_field not in fields:
+                up_field = 'covid_in_pop_uplim'
+            if up_field not in fields:
+                up_field = None
+
             if 'UK' in regions or 'England' in regions:
                 uk_maybe_weighted = True
                 en_maybe_weighted = True
+                en_lo_quirk = True
+                en_up_quirk = True
+                uk_lo_quirk = True
+                uk_up_quirk = True
 
                 uk_mid = 0
                 en_mid = 0
                 file_uk_mid = 0
                 file_en_mid = 0
+
+                file_en_lo = 0
+                file_en_up = 0
+                en_lo = 0
+                en_up = 0
+
+                file_uk_lo = 0
+                file_uk_up = 0
+                uk_lo = 0
+                uk_up = 0
 
                 row = next(read, None)
                 assert row
@@ -144,18 +174,39 @@ def changes(indir, prefix, outfile):
                     mid = row.get(mid_field)
                     assert mid
                     mid = float(mid)
+
+                    lo = row.get(lo_field, "0")
+                    lo = float(lo)
+                    up = row.get(up_field, "0")
+                    up = float(up)
+
                     region = row.get('region')
                     assert region
                     if region == 'UK':
                         file_uk_mid = mid
+
+                        file_uk_lo = lo
+                        file_uk_up = up
                     elif region == 'England':
                         file_en_mid = mid
                         uk_mid += mid
+
+                        file_en_lo = lo
+                        file_en_up = up
+
+                        uk_lo += lo
+                        uk_up += up
                     else:
                         if region in ['Wales', 'Scotland', 'Northern Ireland']:
                             uk_mid += mid
+
+                            uk_lo += lo
+                            uk_up += up
                         else:
                             en_mid += mid
+
+                            en_lo += lo
+                            en_up += up
 
                     row = next(read, None)
                     assert row
@@ -165,11 +216,29 @@ def changes(indir, prefix, outfile):
                     en_maybe_weighted = False
                 if abs(file_uk_mid - uk_mid) > 0.01:
                     uk_maybe_weighted = False
+                if abs(file_en_lo - en_lo) > 0.01:
+                    en_lo_quirk = False
+                if abs(file_en_up - en_up) > 0.01:
+                    en_up_quirk = False
+                if abs(file_uk_lo - uk_lo) > 0.01:
+                    uk_lo_quirk = False
+                if abs(file_uk_up - uk_up) > 0.01:
+                    uk_up_quirk = False
 
             if 'UK' not in regions:
                 uk_maybe_weighted = None
+                uk_lo_quirk = None
+                uk_up_quirk = None
             if 'England' not in regions:
                 en_maybe_weighted = None
+                en_lo_quirk = None
+                en_up_quirk = None
+            if not lo_field:
+                en_lo_quirk = None
+                uk_lo_quirk = None
+            if not up_field:
+                en_up_quirk = None
+                uk_up_quirk = None
             f.seek(0)
 
             assert f.readline().rstrip() == head
@@ -216,6 +285,18 @@ def changes(indir, prefix, outfile):
         if en_maybe_weighted != prev_en_maybe_weighted:
             outfile.write(f'{name}:  EN region-weighted: {en_maybe_weighted}\n')
             change = True
+        if en_lo_quirk != prev_en_lo_quirk:
+            outfile.write(f'{name}:  suspect EN CI (lo): {en_lo_quirk}\n')
+            change = True
+        if en_up_quirk != prev_en_up_quirk:
+            outfile.write(f'{name}:  suspect EN CI (up): {en_up_quirk}\n')
+            change = True
+        if uk_lo_quirk != prev_uk_lo_quirk:
+            outfile.write(f'{name}:  suspect UK CI (lo): {uk_lo_quirk}\n')
+            change = True
+        if uk_up_quirk != prev_uk_up_quirk:
+            outfile.write(f'{name}:  suspect UK CI (up): {uk_up_quirk}\n')
+            change = True
         prev_fields = fields
         prev_head = head
         prev_start = start
@@ -223,6 +304,10 @@ def changes(indir, prefix, outfile):
         prev_offset = offset
         prev_en_maybe_weighted = en_maybe_weighted
         prev_uk_maybe_weighted = uk_maybe_weighted
+        prev_en_lo_quirk = en_lo_quirk
+        prev_en_up_quirk = en_up_quirk
+        prev_uk_lo_quirk = uk_lo_quirk
+        prev_uk_up_quirk = uk_up_quirk
         if change:
             outfile.write('\n')
 

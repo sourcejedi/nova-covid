@@ -3,10 +3,14 @@
 20210209:  Offset (days):      4
 20210209:  Regions:            East Midlands, East of England, England, London, North East, North West, Northern Ireland, Scotland, South East, South West, Wales, West Midlands, Yorkshire and The Humber
 20210209:  EN region-weighted: False
+20210209:  suspect EN CI (lo): False
+20210209:  suspect EN CI (up): False
 
 20210722:  Fields:             date, region, covid_in_pop, covid_in_pop_lo, covid_in_pop_up, covid_in_100k, covid_in_100k_lolim, covid_in_100k_uplim
 20210722:  Start date:         2020-05-12
 20210722:  EN region-weighted: True
+20210722:  suspect EN CI (lo): True
+20210722:  suspect EN CI (up): True
 
 20211217:  Offset (days):      2
 

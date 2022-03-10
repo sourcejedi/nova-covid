@@ -3,5 +3,7 @@
 20210209:  Offset (days):      4
 20210209:  Regions:            East Midlands, East of England, England, London, North East, North West, Northern Ireland, Scotland, South East, South West, Wales, West Midlands, Yorkshire and The Humber
 20210209:  EN region-weighted: False
+20210209:  suspect EN CI (lo): False
+20210209:  suspect EN CI (up): False
 
 20210209
