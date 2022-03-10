@@ -120,86 +120,69 @@ def changes(indir, prefix, outfile):
             regions_set = set(regions)
             f.seek(0)
 
+            read = csv.DictReader(f)
+            mid_field = 'pop_mid'
+            if mid_field not in fields:
+                mid_field = 'covid_in_pop'
+            if mid_field not in fields:
+                mid_field = 'active_cases'
+
+            if 'UK' in regions or 'England' in regions:
+                uk_maybe_weighted = True
+                en_maybe_weighted = True
+
+                uk_mid = 0
+                en_mid = 0
+                file_uk_mid = 0
+                file_en_mid = 0
+
+                row = next(read, None)
+                assert row
+                date = row.get('date')
+                assert(date)
+                while date == start:
+                    mid = row.get(mid_field)
+                    assert mid
+                    mid = float(mid)
+                    region = row.get('region')
+                    assert region
+                    if region == 'UK':
+                        file_uk_mid = mid
+                    elif region == 'England':
+                        file_en_mid = mid
+                        uk_mid += mid
+                    else:
+                        if region in ['Wales', 'Scotland', 'Northern Ireland']:
+                            uk_mid += mid
+                        else:
+                            en_mid += mid
+
+                    row = next(read, None)
+                    assert row
+                    date = row.get('date')
+
+                if abs(file_en_mid - en_mid) > 0.01:
+                    en_maybe_weighted = False
+                if abs(file_uk_mid - uk_mid) > 0.01:
+                    uk_maybe_weighted = False
+
+            if 'UK' not in regions:
+                uk_maybe_weighted = None
+            if 'England' not in regions:
+                en_maybe_weighted = None
+            f.seek(0)
+
             assert f.readline().rstrip() == head
             heads = head.split(',')
             date_field = 0
             if not heads[0]:
                 date_field = 1
-            region_field = date_field + 1
             assert heads[date_field] == 'date'
-            assert heads[region_field] == 'region'
 
-            try:
-                mid_field = heads.index('pop_mid')
-            except ValueError:
-                try:
-                    mid_field = heads.index('covid_in_pop')
-                except ValueError:
-                    mid_field = heads.index('active_cases')
-
-            # Optimized inner loop ahead
-            skip_slow = False
-            if not skip_slow:
-                uk_maybe_weighted = True
-                en_maybe_weighted = True
-                if 'UK' not in regions and 'England' not in regions:
-                    mid_field = None
-
-                prev_date = None
-                regions2_set = regions_set
-                uk_mid = 0
-                en_mid = 0
-                file_uk_mid = 0
-                file_en_mid = 0
-                while True:
-                    line = f.readline()
-                    if not line:
-                        assert regions2_set == regions_set
-                        break
-                    line = line.split(',')
-                    date = line[date_field]
-                    region2 = line[region_field]
-                    if date != prev_date:
-                        assert regions2_set == regions_set
-                        regions2_set = set()
-
-                        if mid_field:
-                            if abs(file_en_mid - en_mid) > 0.01:
-                                en_maybe_weighted = False
-                            if abs(file_uk_mid - uk_mid) > 0.01:
-                                uk_maybe_weighted = False
-                            uk_mid = 0
-                            en_mid = 0
-                        prev_date = date
-                    regions2_set.add(region2)
-
-                    # lazy coding: this won't be tested for the last date.
-                    # testing this separately from 'incidence table' was
-                    # probably overkill.  Oh well.
-                    if mid_field:
-                        mid = float(line[mid_field])
-                        if region2 == 'UK':
-                            file_uk_mid = mid
-                        elif region2 == 'England':
-                            file_en_mid = mid
-                            uk_mid += mid
-                        else:
-                            if region2 in ['Wales', 'Scotland', 'Northern Ireland']:
-                                uk_mid += mid
-                            else:
-                                en_mid += mid
-
-                if 'UK' not in regions:
-                    uk_maybe_weighted = None
-                if 'England' not in regions:
-                    en_maybe_weighted = None
-            else: # skip_slow
-                uk_maybe_weighted = None
-                en_maybe_weighted = None
-
-                for line in f:
-                    pass
-                (date, region2, _) = line.split(',', 2+shift)[shift:]
+            # Optimized inner loop :)
+            for line in f:
+                pass
+            date = line.split(',', 1 + date_field)[date_field]
 
             last_date = date
             last_date = last_date.split('-')
@@ -209,6 +192,7 @@ def changes(indir, prefix, outfile):
             name_date = map(int, name_date)
             name_date = datetime.date(*name_date)
             offset = (name_date - last_date).days
+
         change = False
         if fields != prev_fields:
             outfile.write(f'{name}:  Fields:             {", ".join(fields)}\n')
