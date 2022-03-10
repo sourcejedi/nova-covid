@@ -182,9 +182,11 @@ def changes(indir, prefix, outfile):
                             file_uk_mid = mid
                         elif region2 == 'England':
                             file_en_mid = mid
-                        else:
                             uk_mid += mid
-                            if region2 not in ['Wales', 'Scotland', 'Northern Ireland']:
+                        else:
+                            if region2 in ['Wales', 'Scotland', 'Northern Ireland']:
+                                uk_mid += mid
+                            else:
                                 en_mid += mid
 
                 if 'UK' not in regions:
@@ -225,7 +227,7 @@ def changes(indir, prefix, outfile):
             outfile.write(f'{name}:  Regions:            {", ".join(regions)}\n')
             change = True
         if uk_maybe_weighted != prev_uk_maybe_weighted:
-            outfile.write(f'{name}:  UK region-weighted: {uk_maybe_weighted}\n')
+            outfile.write(f'{name}:  UK nation-weighted: {uk_maybe_weighted}\n')
             change = True
         if en_maybe_weighted != prev_en_maybe_weighted:
             outfile.write(f'{name}:  EN region-weighted: {en_maybe_weighted}\n')
