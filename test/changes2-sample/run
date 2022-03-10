@@ -4,5 +4,5 @@ set -o errexit
 ../../changes.py
 cd out-sample/changes
 for i in *; do
-    diff -u "$i" ../../out/changes/"$i"
+    diff -u "$i" ../../out/changes/"$i" || true
 done
