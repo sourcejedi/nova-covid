@@ -5,6 +5,16 @@ from pathlib import Path
 import csv
 import datetime
 
+# https://www.mikulskibartosz.name/wilson-score-in-python-example/
+from math import sqrt
+def wilson(p, n, z = 1.96):
+    denominator = 1 + z**2/n
+    centre_adjusted_probability = p + z*z / (2*n)
+    adjusted_standard_deviation = sqrt((p*(1 - p) + z*z / (4*n)) / n)
+
+    lower_bound = (centre_adjusted_probability - z*adjusted_standard_deviation) / denominator
+    upper_bound = (centre_adjusted_probability + z*adjusted_standard_deviation) / denominator
+    return (lower_bound, upper_bound)
 
 def changes_table(indir, prefix, outfile):
     paths = list(indir.glob(prefix + '*.csv'))
@@ -14,6 +24,8 @@ def changes_table(indir, prefix, outfile):
     prev_head = None
     prev_fields = None
     prev_regions = None
+    prev_wilson_ci_p = None
+    prev_wilson_ci_cases = None
     for path in paths:
         print(path)
         name = path.name[prefix_len:-4]
@@ -31,38 +43,116 @@ def changes_table(indir, prefix, outfile):
             assert row
             f.seek(0)
 
+            assert f.readline().rstrip() == head
+            heads = head.split(',')
+            f.seek(0)
+
+            def get_region(row):
+                return row.get('region') or row.get('nhser19nm')
+
             regions = []
             read = csv.DictReader(f)
-            row = next(read, None)
-            assert row
-            while row:
-                region = row.get('region') or row.get('nhser19nm')
+            for row in read:
+                region = get_region(row)
                 assert region
                 assert region not in regions
                 regions.append(region)
-                row = next(read, None)
             regions.sort()
             regions_set = set(regions)
             f.seek(0)
 
-            assert f.readline().rstrip() == head
-            heads = head.split(',')
+            # hack. this thing is about methods v1 to v3
+            # and the initial incidence tables for v4 were broken anyway
+            # so lets just cut it off there
+            if name < '20210721':
+                wilson_ci_p = True
+                wilson_ci_cases = True
 
+                read = csv.DictReader(f)
+                for row in read:
+                    region = get_region(row)
+                    tests = row.get('# total tests')
+                    if tests == 'N/A':
+                        continue
+                    tests = int(tests)
+                    positives = int(row.get('# +ve tests'))
+                    p = positives/tests
+                    (p_lo,p_up) = wilson(p, tests)
+
+                    # ???
+                    if not (region == 'Northern Ireland' and
+                            tests == 44 and
+                            positives == 2):
+                        file_p = row.get('% +ve tests')
+                        file_p = float(file_p.strip('%'))/100
+                        file_p_lo = row.get('% +ve tests\n95% lower lim.')
+                        file_p_lo = float(file_p_lo.strip('%'))/100
+                        file_p_up = row.get('% +ve tests\n95% upper lim.')
+                        file_p_up = float(file_p_up.strip('%'))/100
+
+                        if not (abs(file_p - p) < 0.000051 and
+                                abs(file_p_lo - p_lo) < 0.000051 and
+                                abs(file_p_up - p_up) < 0.000051):
+                            wilson_ci_p = False
+                            #print(f'{name}, {region}, {tests}, {positives}')
+                            #print(f'{file_p}, {p}')
+                            #print(f'{file_p_lo}, {p_lo}')
+                            #print(f'{file_p_up}, {p_up}')
+                            #print()
+
+                    file_cases = int(row.get('est. daily\ncases'))
+                    file_cases_lo = int(row.get('est. daily\ncases\n95% lower lim.'))
+                    file_cases_up = int(row.get('est. daily\ncases\n95% upper lim.'))
+
+                    if p != 0:
+                        # brute force un-rounding of cases.
+                        # alternative: incidence_history
+                        i = -0.51
+                        while i < 0.511:
+                            cases = file_cases + i
+                            cases_lo = cases * (p_lo/p)
+                            cases_up = cases * (p_up/p)
+                            if (
+                                (abs(file_cases_lo - cases_lo) < 0.51 and
+                                abs(file_cases_up - cases_up) < 0.51)):
+                                    break
+                            i += 0.01
+                        else:
+                            wilson_ci_cases = False
+                            #cases = file_cases
+                            #cases_lo = cases * (p_lo/p)
+                            #cases_up = cases * (p_up/p)
+
+                            #print(f'{name}, {region}, {tests}, {positives}')
+                            #print(f'{file_cases}, {file_cases_lo}, {file_cases_up}')
+                            #print(f'{cases}, {cases_lo}, {cases_up}')
+                            #print()
+            else:
+                wilson_ci_p = "N/A"
+                wilson_ci_cases = "Unknown"
         change = False
         if fields != prev_fields:
             display_fields = [field.replace('\n', ' ') for field in fields]
-            outfile.write(f'{name}:  Fields:        {", ".join(display_fields)}\n')
+            outfile.write(f'{name}:  Fields:              {", ".join(display_fields)}\n')
             change = True
         if fields == prev_fields and head != prev_head:
-            outfile.write(f'{name}:  Old headers:   {head}\n')
-            outfile.write(f'{name}:  New headers:   {head}\n')
+            outfile.write(f'{name}:  Old headers:         {head}\n')
+            outfile.write(f'{name}:  New headers:         {head}\n')
             change = True
         if regions != prev_regions:
-            outfile.write(f'{name}:  Regions:       {", ".join(regions)}\n')
+            outfile.write(f'{name}:  Regions:             {", ".join(regions)}\n')
+            change = True
+        if wilson_ci_p != prev_wilson_ci_p:
+            outfile.write(f'{name}:  % +ve Wilson limits: {wilson_ci_p}\n')
+            change = True
+        if wilson_ci_cases != prev_wilson_ci_cases:
+            outfile.write(f'{name}:   case Wilson limits: {wilson_ci_cases}\n')
             change = True
         prev_fields = fields
         prev_head = head
         prev_regions = regions
+        prev_wilson_ci_p = wilson_ci_p
+        prev_wilson_ci_cases = wilson_ci_cases
         if change:
             outfile.write('\n')
 
