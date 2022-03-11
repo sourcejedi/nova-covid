@@ -14,7 +14,7 @@ Requirements:
 
 `fetch.sh`. Download some ZOE data files (~1GB).
 
-`changes.sh`. Find when ZOE data files changed.
+`changes.sh`. Find when ZOE data files changed format etc.
 
 `tail.sh` + `jump.ods`. Crude, manual spreadsheet to find "jumps", indicating a new method.
 
