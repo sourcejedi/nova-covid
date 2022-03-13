@@ -10,11 +10,13 @@
 
 # Limitations:
 #
+# ???
 # Summing English regions is not what ZOE were doing for incidence?
 # But they are by now (ZOE v5), and it's what ZOE were doing for their
 # published prevalence.
 # See p_from_incidence_history.UK_20210518.ods
-#
+# ???
+
 # prevalence_history_20210512.csv and later are re-weighted by vaccination.
 # incidence_history_20210512.csv and later are *not* re-weighted by vaccination.
 # (the latter could be useful with reference to incidence table.csv).
@@ -25,6 +27,8 @@
 
 import csv
 from pathlib import Path
+import os
+import errno
 
 def england(input_file, output_file):
     england = dict()
@@ -50,13 +54,25 @@ def england(input_file, output_file):
     for date in dates:
         writer.writerow([date, england[date]])
 
-outdir = Path('out/prevalence_history.England_weighted/')
+
+outdir = Path('out/prevalence_history.England/')
 outdir.mkdir(parents=True, exist_ok=True)
 
 indir = Path('download/prevalence_history/')
 paths = list(indir.glob('*.csv'))
+paths.sort()
 for path in paths:
     filename = path.name
+    out_path = outdir / filename
     with (path.open() as csvfile_in,
-         (outdir / filename).open('w') as csvfile_out):
+          out_path.open('w') as csvfile_out):
         england(csvfile_in, csvfile_out)
+
+
+latest = 'out/latest_prevalence_history.England.csv'
+try:
+    os.unlink(latest)
+except IOError as e:
+    if e.errno != errno.ENOENT:
+        raise e
+os.symlink('../' + str(out_path), latest)
