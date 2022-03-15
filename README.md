@@ -1,8 +1,9 @@
 ZOE still seems to be a thing.  So I'm cleaning up / revising
 a few of my scripts for GitHub.
 
- * https://sourcejedi.github.io/2022/01/31/zoe-covid-study.html 
- * https://sourcejedi.github.io/2022/02/02/zoe-covid-study-part-2-methods.html
+ * [ZOE Covid Study - the public data files](https://sourcejedi.github.io/2022/01/31/zoe-covid-study.html)
+ * [ZOE Covid Study - part 2 - the method](https://sourcejedi.github.io/2022/02/02/zoe-covid-study-part-2-methods.html)
+ * [ZOE Covid Study - confidence intervals](https://sourcejedi.github.io/2022/02/27/zoe-covid-confidence-intervals.html)
 
 Requirements:
  * Linux/Unix
