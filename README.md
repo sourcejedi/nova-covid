@@ -17,11 +17,11 @@ Requirements:
 
 `changes.sh`. Find when ZOE data files changed format etc.
 
-`tail.sh` + `jump.ods`. Crude, manual spreadsheet to find "jumps", indicating a new method.
+`wilson.py` + `wilson.ods`. Calculate the Wilson score, to reproduce confidence intervals used in method v1, v2, and v3 (!).
+
+`tail.sh` + `tail-jump.ods`. Simple manual spreadsheet to find "jumps", suggesting a new method.
 
 `prevalence.England.py` + `prevalence.UK.py`. Add up the prevalences for the England / UK regions.
-
-`wilson.py` + `wilson.ods`. Calculate the Wilson score, to reproduce confidence intervals used in method v1, v2, and v3 (!).
 
 ## download-sample/
 
