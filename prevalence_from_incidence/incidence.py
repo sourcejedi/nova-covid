@@ -2,7 +2,7 @@
 
 import csv
 import math
-import scipy.special
+from scipy.stats import gamma
 import sys
 
 def iter_rows(infile):
@@ -24,22 +24,18 @@ def iter_incidence(infile, region):
 
         yield {'date': row['date'], 'incidence_mid': pop_mid}
 
-def gamma_dist(x, a, B):
-    # ??? problem with the definition
-    # either the one I used, or the one implied by the CSS paper :-P
-    B=1/B
-
-    return B**a * x**(a-1) * math.e**(-B*x) / scipy.special.gamma(a)
 
 # Recovery model (days)
 RECOVERY_LEN=30
 RECOVERY=[]
 
+gamma = gamma(a=2.595, scale=4.48)
+
+# x = days to recover
 y_cum = 0
-# x = days to recovery
 for x in range(0, RECOVERY_LEN):
-    y = gamma_dist(x, a=2.595, B=4.48)
-    y_cum += y
+    y = gamma.pdf(x)
+    y_cum = gamma.cdf(x)
     #print (y,y_cum)
     RECOVERY.append(1-y_cum)
 
