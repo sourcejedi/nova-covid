@@ -29,7 +29,15 @@ def iter_incidence(infile, region):
 RECOVERY_LEN=30
 RECOVERY=[]
 
+# Values shown in original study.
+# These don't exactly match current data files
 gamma = gamma(a=2.595, scale=4.48)
+
+# This doesn't *exactly* match current data files either.
+# It underestimates by 2% to 3%.  So, fairly close.
+#
+# gamma = gamma(a=3.79, scale=3.50)
+
 
 # x = days to recover
 y_cum = 0
