@@ -31,13 +31,129 @@ RECOVERY=[]
 
 # Values shown in original study.
 # These don't exactly match current data files
-gamma = gamma(a=2.595, scale=4.48)
+#gamma = gamma(a=2.595, scale=4.48)
 
-# This doesn't *exactly* match current data files either.
-# It underestimates by 2% to 3%.  So, fairly close.
-#
-# gamma = gamma(a=3.79, scale=3.50)
+# Match current data files.
+# stdev of the error is about 0.5%
+gamma = gamma(a=4.7, scale=2.88)
 
+# Fit to UK. Except you can't do that, oops.
+# You need to do each region seperately.
+#gamma = gamma(a=3.79, scale=3.50)
+
+
+
+
+# Work notes
+
+#gamma = gamma(a=2.595, scale=4.48)
+
+#gamma = gamma(a=3.795, scale=3.48)
+#gamma = gamma(a=3.85, scale=3.52)
+#gamma = gamma(a=3.85, scale=3.48)
+#gamma = gamma(a=3.795, scale=3.52)
+
+#gamma = gamma(a=3.75, scale=3.52)
+#gamma = gamma(a=3.75, scale=3.56)
+#gamma = gamma(a=3.70, scale=3.56)
+#gamma = gamma(a=3.65, scale=3.60)
+#gamma = gamma(a=3.65, scale=3.65)
+
+#gamma = gamma(a=3.8, scale=3.56) # worse
+#gamma = gamma(a=3.8, scale=3.52) # not as good
+
+#gamma = gamma(a=3.75, scale=3.52)
+#gamma = gamma(a=3.75, scale=3.54)
+#gamma = gamma(a=3.77, scale=3.52)
+#gamma = gamma(a=3.77, scale=3.50)
+#gamma = gamma(a=3.79, scale=3.50) # pretty good!
+#gamma = gamma(a=3.81, scale=3.50)
+#gamma = gamma(a=3.79, scale=3.52)
+#gamma = gamma(a=3.72, scale=3.54)
+#gamma = gamma(a=3.72, scale=3.52)
+#gamma = gamma(a=3.70, scale=3.52)
+#gamma = gamma(a=3.71, scale=3.52)
+#gamma = gamma(a=3.71, scale=3.54)
+#gamma = gamma(a=3.71, scale=3.56)
+#gamma = gamma(a=3.71, scale=3.58)
+#gamma = gamma(a=3.75, scale=3.54)
+#gamma = gamma(a=3.73, scale=3.54)
+#gamma = gamma(a=3.74, scale=3.54)
+#gamma = gamma(a=3.78, scale=3.50)
+#gamma = gamma(a=3.78, scale=3.51)
+#gamma = gamma(a=3.79, scale=3.51)
+#gamma = gamma(a=3.80, scale=3.51)
+#gamma = gamma(a=3.81, scale=3.51)
+#gamma = gamma(a=3.84, scale=3.52)
+#gamma = gamma(a=3.86, scale=3.52)
+#gamma = gamma(a=3.85, scale=3.53)
+#gamma = gamma(a=3.84, scale=3.54)
+#gamma = gamma(a=3.87, scale=3.50)
+#gamma = gamma(a=3.79, scale=3.54)
+#gamma = gamma(a=3.87, scale=3.52)
+#gamma = gamma(a=3.79, scale=3.58)
+
+# London
+#gamma = gamma(a=3.79, scale=3.50)
+#gamma = gamma(a=3.85, scale=3.50)
+#gamma = gamma(a=3.79, scale=3.90)
+#gamma = gamma(a=3.79, scale=3.70)
+#gamma = gamma(a=3.75, scale=3.80)
+#gamma = gamma(a=3.75, scale=3.75)
+#gamma = gamma(a=3.75, scale=3.70)
+#gamma = gamma(a=3.9, scale=3.50)
+#gamma = gamma(a=3.85, scale=3.60)
+#gamma = gamma(a=3.85, scale=3.55)
+#gamma = gamma(a=3.85, scale=3.54)
+#gamma = gamma(a=3.79, scale=3.55)
+#gamma = gamma(a=3.82, scale=3.55)
+#gamma = gamma(a=3.82, scale=3.56)
+#gamma = gamma(a=3.80, scale=3.58)
+#gamma = gamma(a=3.83, scale=3.57)
+#gamma = gamma(a=3.83, scale=3.565)
+#gamma = gamma(a=3.83, scale=3.555)
+#gamma = gamma(a=3.84, scale=3.545)
+#gamma = gamma(a=3.85, scale=3.537)
+#gamma = gamma(a=3.86, scale=3.528)
+#gamma = gamma(a=3.88, scale=3.508)
+#gamma = gamma(a=3.98, scale=3.408)
+#gamma = gamma(a=4.1, scale=3.3)
+
+#gamma = gamma(a=4.4, scale=3.0)
+#gamma = gamma(a=4.4, scale=3.15)
+#gamma = gamma(a=4.4, scale=3.1)
+#gamma = gamma(a=4.2, scale=3.2)
+#gamma = gamma(a=4.3, scale=3.12)
+#gamma = gamma(a=4.3, scale=3.2)
+#gamma = gamma(a=4.3, scale=3.14)
+#gamma = gamma(a=4.3, scale=3.15) #g
+#gamma = gamma(a=4.3, scale=3.16)
+#gamma = gamma(a=4.2, scale=3.18)
+#gamma = gamma(a=4.2, scale=3.19)
+#gamma = gamma(a=4.2, scale=3.29)
+#gamma = gamma(a=4.2, scale=3.20)
+#gamma = gamma(a=4.2, scale=3.23) #g
+#gamma = gamma(a=4.4, scale=3.09)
+#gamma = gamma(a=4.4, scale=3.08) #g
+#gamma = gamma(a=4.8, scale=2.5)
+#gamma = gamma(a=4.8, scale=2.8)
+#gamma = gamma(a=4.8, scale=2.81)
+#gamma = gamma(a=4.8, scale=2.82) #g
+#gamma = gamma(a=5.2, scale=2.55) #b
+#gamma = gamma(a=4.9, scale=2.7) #b
+#gamma = gamma(a=4.7, scale=2.93)
+#gamma = gamma(a=4.7, scale=2.83)
+#gamma = gamma(a=4.7, scale=2.88) #g g
+#gamma = gamma(a=4.55, scale=2.80)
+#gamma = gamma(a=4.55, scale=2.83)
+#gamma = gamma(a=4.55, scale=2.98) #g
+#gamma = gamma(a=4.6, scale=2.93)
+#gamma = gamma(a=4.6, scale=2.95) #g
+#gamma = gamma(a=4.5, scale=3.0)
+#gamma = gamma(a=4.5, scale=3.03)
+#gamma = gamma(a=4.5, scale=3.015) #g
+#gamma = gamma(a=4.8, scale=2.819)
+#gamma = gamma(a=4.6, scale=2.945)
 
 # x = days to recover
 y_cum = 0
