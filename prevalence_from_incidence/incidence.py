@@ -35,7 +35,13 @@ RECOVERY=[]
 
 # Match current data files.
 # stdev of the error is about 0.5%
-gamma = gamma(a=4.7, scale=2.88)
+#
+# Both of these work.  Second one was trained on
+# the data file which is longer & more recent &
+# which provides fractional incidence.
+#
+#gamma = gamma(a=4.7, scale=2.88)
+gamma = gamma(a=4.5, scale=3.012)
 
 # Fit to UK. Except you can't do that, oops.
 # You need to do each region seperately.
@@ -154,6 +160,25 @@ gamma = gamma(a=4.7, scale=2.88)
 #gamma = gamma(a=4.5, scale=3.015) #g
 #gamma = gamma(a=4.8, scale=2.819)
 #gamma = gamma(a=4.6, scale=2.945)
+
+# London 20220211
+
+#gamma = gamma(a=4.7, scale=2.88)
+#gamma = gamma(a=4.75, scale=2.85)
+#gamma = gamma(a=4.8, scale=2.82)
+#gamma = gamma(a=4.65, scale=2.91)
+#gamma = gamma(a=4.65, scale=2.92)
+#gamma = gamma(a=4.65, scale=2.913) #g
+#gamma = gamma(a=4.6, scale=2.943)
+#gamma = gamma(a=4.6, scale=2.95)
+#gamma = gamma(a=4.6, scale=2.945) #g
+#gamma = gamma(a=4.5, scale=3.0)
+#gamma = gamma(a=4.5, scale=3.05)
+#gamma = gamma(a=4.5, scale=3.01)
+#gamma = gamma(a=4.5, scale=3.011)
+#gamma = gamma(a=4.5, scale=3.012) #g
+#gamma = gamma(a=4.4, scale=3.082) 
+
 
 # x = days to recover
 y_cum = 0
