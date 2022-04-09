@@ -24,6 +24,7 @@ def changes_table(indir, prefix, outfile):
     prev_head = None
     prev_fields = None
     prev_regions = None
+    prev_UK_pop = None
     prev_wilson_ci_p = None
     prev_wilson_ci_cases = None
     for path in paths:
@@ -51,19 +52,37 @@ def changes_table(indir, prefix, outfile):
                 return row.get('region') or row.get('nhser19nm')
 
             regions = []
+            UK_pop = 0
+            EN_pop = 0
+            EN_pop_file = 0
             read = csv.DictReader(f)
             for row in read:
                 region = get_region(row)
                 assert region
                 assert region not in regions
                 regions.append(region)
+
+                pop = float(row['population'])
+                assert pop == int(pop)
+                pop = int(pop)
+                if region == 'England':
+                    EN_pop_file = pop
+                    UK_pop += EN_pop_file
+                elif region in ['Scotland', 'Wales', 'Northern Ireland']:
+                    UK_pop += pop
+                else:
+                    EN_pop += pop
             regions.sort()
             regions_set = set(regions)
             f.seek(0)
 
+            assert(EN_pop == EN_pop_file)
+            if UK_pop < 1000*1000:
+                UK_pop = ('Less than 1,000,000. ' +
+                    'This file has several column headers in the wrong place.')
+
             # hack. this thing is about methods v1 to v3
-            # and the initial incidence tables for v4 were broken anyway
-            # so lets just cut it off there
+            # and v4 doesn't have % +ve, so would need some adaptation.
             if name < '20210721':
                 wilson_ci_p = True
                 wilson_ci_cases = True
@@ -142,6 +161,9 @@ def changes_table(indir, prefix, outfile):
         if regions != prev_regions:
             outfile.write(f'{name}:  Regions:             {", ".join(regions)}\n')
             change = True
+        if UK_pop != prev_UK_pop:
+            outfile.write(f'{name}:  UK population:       {UK_pop}\n')
+            change = True
         if wilson_ci_p != prev_wilson_ci_p:
             outfile.write(f'{name}:  % +ve Wilson limits: {wilson_ci_p}\n')
             change = True
@@ -151,6 +173,7 @@ def changes_table(indir, prefix, outfile):
         prev_fields = fields
         prev_head = head
         prev_regions = regions
+        prev_UK_pop = UK_pop
         prev_wilson_ci_p = wilson_ci_p
         prev_wilson_ci_cases = wilson_ci_cases
         if change:
