@@ -1,4 +1,7 @@
-20201227:  Fields:        nhser19nm, # total tests, # +ve tests, % +ve tests, % +ve tests 95% lower lim., % +ve tests 95% upper lim., population, # active users, avg. % of newly-sick/day, est. daily cases, est. daily cases 95% lower lim., est. daily cases 95% upper lim., est. daily cases/million, est. daily cases/million 95% lower lim., est. daily cases/million 95% upper lim.
-20201227:  Regions:       East of England, England, London, Midlands, North East and Yorkshire, North West, Northern Ireland, Scotland, South East, South West, Wales
+20201227:  Fields:              nhser19nm, # total tests, # +ve tests, % +ve tests, % +ve tests 95% lower lim., % +ve tests 95% upper lim., population, # active users, avg. % of newly-sick/day, est. daily cases, est. daily cases 95% lower lim., est. daily cases 95% upper lim., est. daily cases/million, est. daily cases/million 95% lower lim., est. daily cases/million 95% upper lim.
+20201227:  Regions:             East of England, England, London, Midlands, North East and Yorkshire, North West, Northern Ireland, Scotland, South East, South West, Wales
+20201227:  UK population:       66361874
+20201227:  % +ve Wilson limits: True
+20201227:   case Wilson limits: True
 
 20201227
