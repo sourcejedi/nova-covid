@@ -2,20 +2,20 @@
 20201227:  Regions:             East of England, England, London, Midlands, North East and Yorkshire, North West, Northern Ireland, Scotland, South East, South West, Wales
 20201227:  UK population:       66361874
 20201227:  % +ve Wilson limits: True
-20201227:  case Wilson limits: True
+20201227:   case Wilson limits: True
 
 20210114:  Fields:              region, # total tests, # +ve tests, % +ve tests, % +ve tests 95% lower lim., % +ve tests 95% upper lim., population, # active users, avg. % of newly-sick/day, est. daily cases, est. daily cases 95% lower lim., est. daily cases 95% upper lim., est. daily cases/million, est. daily cases/million 95% lower lim., est. daily cases/million 95% upper lim.
 20210114:  Regions:             East Midlands, East of England, England, London, North East, North West, Northern Ireland, Scotland, South East, South West, Wales, West Midlands, Yorkshire and The Humber
 20210114:  UK population:       66435548
 
-20210513:  UK population:       Less than 1000,000. This file has several column headers in the wrong place.
+20210513:  UK population:       Less than 1,000,000. This file has several column headers in the wrong place.
 
 20210608:  Fields:              region, # total tests, # +ve tests, % +ve tests, % +ve tests 95% lower lim., % +ve tests 95% upper lim., # active users, avg. % of newly-sick/day, population, est. daily cases, est. daily cases 95% lower lim., est. daily cases 95% upper lim., est. daily cases/million, est. daily cases/million 95% lower lim., est. daily cases/million 95% upper lim.
 20210608:  UK population:       66435548
-20210608:  case Wilson limits: False
+20210608:   case Wilson limits: False
 
 20210721:  Fields:              region, # total tests, # +ve tests, population, # active users, # newly sick users, est. daily cases, est. daily cases 95% lower lim., est. daily cases 95% upper lim., est. daily cases/million, est. daily cases/million 95% lower lim., est. daily cases/million 95% upper lim.
 20210721:  % +ve Wilson limits: N/A
-20210721:  case Wilson limits: Unknown
+20210721:   case Wilson limits: Unknown
 
 20220306
