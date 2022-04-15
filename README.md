@@ -19,13 +19,13 @@ Requirements:
 
 `wilson.py` + `wilson.ods`. Calculate the Wilson score, to reproduce confidence intervals used in method v1, v2, and v3 (!).
 
-`tail.sh` + `tail-jump.ods`. Simple manual spreadsheet to find "jumps", suggesting a new method.
+`jump.py` + `jump.ods`. Look for "jumps", that can suggest a change in the method.
 
 `prevalence.England.py` + `prevalence.UK.py`. Add up the prevalences for the England / UK regions.
 
 ## download-sample/
 
-DISCLAIMER: I do not own this data.  I cannot vouch for it.  Do not cite these copies in your academic paper!  I am reposting it to help find out about ZOE methods.
+DISCLAIMER: I do not own this data.  I cannot vouch for it.  Do not cite these copies in your academic paper!  I am reposting it to help learn about ZOE methods.
 
 ### download-sample/incidence table/
 
