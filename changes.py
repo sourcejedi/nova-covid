@@ -370,7 +370,7 @@ def changes(indir, prefix, outfile):
             last_date = last_date.split('-')
             last_date = map(int, last_date)
             last_date = datetime.date(*last_date)
-            name_date = [name[:-4], name[-4:-2], name[-2:]]
+            name_date = [name[:4], name[4:6], name[6:8]]
             name_date = map(int, name_date)
             name_date = datetime.date(*name_date)
             offset = (name_date - last_date).days
