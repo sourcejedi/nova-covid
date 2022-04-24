@@ -48,18 +48,24 @@ USE_GAMMA_MODEL=False
 #       far enough.
 #
 # 5. Using incidence_20210205.csv will not reproduce the exact output.
-#    In early incidence_*.csv files, the central estimate is rounded
-#    to the nearest whole number.  I believe exact reproduction is
-#    possible by multiplying the "100k_mid" collumn by population
-#    (taken from the "incidence table.csv" published the same day).
+#    In incidence_*.csv files around this date, the central estimate
+#    is rounded to the nearest whole number.  I believe exact
+#    reproduction is possible by multiplying the "100k_mid" collumn by
+#    population (taken from the "incidence table.csv" published the same
+#    day).
 #
-#    On the other hand, it appears to reproduce dates earlier than
-#    those included in prevalence_history.  These dates are graphed
-#    in the Lancet paper.
+#    On the other hand, it provides dates earlier than those included
+#    in prevalence_history.  The earlier dates are also graphed in the
+#    Lancet paper, showing very similar results.
 #
 # 6. The recovery vector used to obtain these results (below) is
 #    clearly different from the recovery curve in Figure 2 of the
 #    Lancet paper.  I have asked the authors if they can explain this.
+#
+# 7. Some rows in the prevalence_history series show unexpected
+#    zeroes, i.e. completely outside the trend.  I do not reproduce
+#    these zeroes.  This seems to be a limitation of the official
+#    files.
 
 
 import csv
