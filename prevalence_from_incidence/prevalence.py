@@ -207,7 +207,7 @@ def write_prevalence(infile, outfile):
 
 
 if len(sys.argv) != 2:
-    sys.exit("Usage: ./incidence.py input.csv > output.csv")
+    sys.exit("Usage: prevalence.py input.csv > output.csv")
 
 with open(sys.argv[1]) as infile:
     write_prevalence(infile, sys.stdout)
