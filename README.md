@@ -1,13 +1,17 @@
-ZOE still seems to be a thing.  So I'm cleaning up / revising
-a few of my scripts for GitHub.
+ZOE still seems to be a thing.  So I have cleaned up some of my scripts,
+and I am posting them on GitHub.
 
- * [ZOE Covid Study - the public data files](https://sourcejedi.github.io/2022/01/31/zoe-covid-study.html)
- * [ZOE Covid Study - part 2 - the method](https://sourcejedi.github.io/2022/02/02/zoe-covid-study-part-2-methods.html)
- * [ZOE Covid Study - confidence intervals](https://sourcejedi.github.io/2022/02/27/zoe-covid-confidence-intervals.html)
+ * [ZOE Covid Study - the public data files][blog-1]
+ * [ZOE Covid Study - part 2 - the method][blog-2]
+ * [ZOE Covid Study - confidence intervals][blog-3]
 
-Requirements:
+[blog-1]: https://sourcejedi.github.io/2022/01/31/zoe-covid-study.html
+[blog-2]: https://sourcejedi.github.io/2022/02/02/zoe-covid-study-part-2-methods.html
+[blog-3]: https://sourcejedi.github.io/2022/02/27/zoe-covid-confidence-intervals.html
+
+Software requirements:
  * Linux/Unix
- * gsutil (see first blog)
+ * gsutil - see first blog post above
  * python3
  * LibreOffice, or other ODS reader
 
