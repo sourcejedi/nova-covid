@@ -15,9 +15,8 @@ At the top level:
 
        ./prevalence_from_incidence/build.sh
 
-3. Now open the desired spreadsheet gamma_paper-vs-extract.ods
-   and/or from_incidence_history.ods, and update the graph data.
-   In LibreOffice, this is:
+3. Now open the desired spreadsheet prevalence_from_incidence/*.ods,
+   and update the graph data.  In LibreOffice, this is:
 
     * Edit → Links to external files.
     * Select all, then Update.

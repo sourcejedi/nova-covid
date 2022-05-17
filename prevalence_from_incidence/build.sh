@@ -49,4 +49,14 @@ grep ,England, < "$i" > "$out"/incidence_20210205.unweighted.csv &&
     < "$i" \
     > "$out"/prevalence_from_incidence_20210205.uweighted.gamma.csv &&
 
+./prevalence_from_incidence/prevalence.py \
+    Test \
+    < ./prevalence_from_incidence/test-in.csv \
+    > "$out"/test-out.csv &&
+./prevalence_from_incidence/prevalence.py \
+    --use-gamma \
+    Test \
+    < ./prevalence_from_incidence/test-in.csv \
+    > "$out"/test-out.gamma.csv &&
+    
 exit 0
