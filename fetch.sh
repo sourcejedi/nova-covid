@@ -3,7 +3,8 @@
 # Debug mode
 set -o xtrace
 
-# Using gsutil from google-cloud-sdk
+# Download ZOE files using gsutil from google-cloud-sdk.
+# See https://sourcejedi.github.io/2022/01/31/zoe-covid-study.html
 get() (
     get="$1" &&
     dir="download/$2" &&
