@@ -3,7 +3,7 @@
 # Configuration variable - choose the recovery model.
 
 # Use recovery vector reverse-engineered from comparing data files.
-# Or use a gamma distribution model, like the paper.
+# Or use a gamma distribution model, like the "hotspot" paper.
 # See code below for parameters and comments.
 USE_GAMMA_MODEL=False
 
@@ -51,11 +51,11 @@ USE_GAMMA_MODEL=False
 #
 #    On the other hand, it provides dates earlier than those included
 #    in prevalence_history.  The earlier dates are also graphed in the
-#    Lancet paper, showing very similar results.
+#    "hotspot" paper, showing very similar results.
 #
 # 5. The recovery vector used to obtain these results (below) is
 #    clearly different from the recovery curve in Figure 2 of the
-#    Lancet paper.  I have asked the authors if they can explain this.
+#    "hotspot" paper.  I have asked the authors if they can explain this.
 #
 # 6. Some rows in the prevalence_history series show unexpected
 #    zeroes, i.e. completely outside the trend.  I do not reproduce

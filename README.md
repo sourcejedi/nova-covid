@@ -1,5 +1,5 @@
-ZOE still seems to be a thing.  So I have cleaned up some of my scripts,
-and I am posting them on GitHub.
+ZOE still seems to be a thing.  So I have cleaned up some of my
+scripts, and I am posting them on GitHub.
 
  * [ZOE Covid Study - the public data files][blog-1]
  * [ZOE Covid Study - part 2 - the method][blog-2]
@@ -13,7 +13,9 @@ Software requirements:
  * Linux/Unix
  * gsutil - see first blog post above
  * python3
- * LibreOffice, or other ODS reader
+ * scipy module for python3
+ * LibreOffice or compatible ODS reader
+
 
 ## Index
 
@@ -27,9 +29,13 @@ Software requirements:
 
 `prevalence.England.py` + `prevalence.UK.py`. Add up the prevalences for the England / UK regions.
 
+`prevalence_from_incidence/`.  Reproduce how ZOE estimate prevalence from their incidence figures.  See `README.md` in this directory.
+
+
 ## download-sample/
 
 DISCLAIMER: I do not own this data.  I cannot vouch for it.  Do not cite these copies in your academic paper!  I am reposting it to help learn about ZOE methods.
+
 
 ### download-sample/incidence table/
 
