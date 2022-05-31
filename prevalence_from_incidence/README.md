@@ -8,7 +8,7 @@
 
 * `test-out.ods`:  graph the recovery model used, and overlay it on Figure 2 from the "hotspot" paper.  The recovery model is extracted from `prevalence.py` by running it on an artificial test input, `test-in.csv`.
 
-* `pubpeer-draft.md`:  Draft comment submitted to pubpeer.com.
+* `pubpeer-draft.md`:  Draft comment on the "hotspot" paper, intended for pubpeer.com.
 
 See [Detecting COVID-19 infection hotspots in England using large-scale self-reported data from a mobile application: a prospective, observational study][hotspot-paper].
 

@@ -4,10 +4,12 @@ scripts, and I am posting them on GitHub.
  * [ZOE Covid Study - the public data files][blog-1]
  * [ZOE Covid Study - part 2 - the method][blog-2]
  * [ZOE Covid Study - confidence intervals][blog-3]
+ * [Failure to reproduce calculation of prevalence from incidence used in a scientific paper by ZOE Covid Study][pubpeer-draft]
 
 [blog-1]: https://sourcejedi.github.io/2022/01/31/zoe-covid-study.html
 [blog-2]: https://sourcejedi.github.io/2022/02/02/zoe-covid-study-part-2-methods.html
 [blog-3]: https://sourcejedi.github.io/2022/02/27/zoe-covid-confidence-intervals.html
+[pubpeer-draft]: https://github.com/sourcejedi/nova-covid/blob/main/prevalence_from_incidence/pubpeer-draft.md
 
 Software requirements:
  * Linux/Unix

@@ -1,6 +1,8 @@
-*Note for Dr Mark Graham.  This is the same issue you have already seen, written up for PubPeer.*
+*Draft comment on [Detecting COVID-19 infection hotspots in England using large-scale self-reported data from a mobile application: a prospective, observational study][hotspot-paper], intended for pubpeer.com.*
 
-# Inconsistency between Figure&nbsp;1 and Figure&nbsp;2
+[hotspot-paper]: https://www.thelancet.com/journals/lanpub/article/PIIS2468-2667(20)30269-3/fulltext
+
+---
 
 I thank the study for sharing files of incidence data.  I tried to use a method from this paper, which estimates prevalence based on  incidence.  Unfortunately my result did not match the prevalence published by the study.  The same issue applies to this paper.
 
