@@ -3,7 +3,7 @@
 # Configuration variable - choose the recovery model.
 
 # Use recovery vector reverse-engineered from comparing data files.
-# Or use a gamma distribution model, like the "hotspot" paper.
+# Or use a gamma distribution model, like the "hotspots" paper.
 # See code below for parameters and comments.
 USE_GAMMA_MODEL=False
 
