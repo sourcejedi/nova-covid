@@ -6,7 +6,7 @@ import csv
 from collections import OrderedDict
 import math
 
-SKIP_LAST_DAYS=3
+SKIP_LAST_DAYS=2
 COMPARE_LAST_DAYS=30
 
 def jump(indir, prefix, outfile):
@@ -57,6 +57,10 @@ def jump(indir, prefix, outfile):
                         value = 0
                     prev_date = date
                 region = row[region_field]
+                # Highlight splits, in prevalence_history
+                #if region not in ['North East', 'East Midlands', 'London']:
+                #    continue
+                # Ignore splits, in incidence
                 #if region not in ['East of England', 'London', 'North West','South East', 'South West']:
                 #    continue
                 if region in ['UK', 'England', 'Wales', 'Scotland', 'Northern Ireland']:
@@ -65,23 +69,32 @@ def jump(indir, prefix, outfile):
                 value += pop_mid
             values[date] = value
 
-            if prev_values:
-                last_dates = reversed(values.keys())
-                i = COMPARE_LAST_DAYS
-                j = SKIP_LAST_DAYS
+            if prev_values:                
+                def dates_to_compare():
+                    last_dates = reversed(values.keys())
+
+                    date = next(last_dates)
+                    while date not in prev_values:
+                        date = next(last_dates)
+
+                    for _ in range(SKIP_LAST_DAYS):
+                        date = next(last_dates)
+                        assert date in prev_values
+
+                    for _ in range(COMPARE_LAST_DAYS):
+                        if date not in prev_values:
+                            return # ran out of days in previous series
+                        yield date
+                        try:
+                            date = next(last_dates)
+                        except StopIteration:
+                            return # ran out of days in current series
+                
                 all_dev = 0
-                for d in last_dates:
-                    if j > 0:
-                        j -= 1
-                        continue
-                    if d not in prev_values:
-                        continue
+                for d in dates_to_compare():
                     dev = (values[d] - prev_values[d]) / prev_values[d]
                     dev = dev * dev
                     all_dev += dev
-                    i -= 1
-                    if i <= 0:
-                        break
                 all_dev = math.sqrt(all_dev / (COMPARE_LAST_DAYS-1))
 
                 date = next(reversed(values.keys()))
