@@ -7,7 +7,7 @@ from collections import OrderedDict
 import math
 
 SKIP_LAST_DAYS=3
-COMPARE_LAST_DAYS=30
+COMPARE_LAST_DAYS=18*3
 
 def jump(indir, prefix, outfile):
     writer = csv.writer(outfile)
@@ -95,27 +95,39 @@ def jump(indir, prefix, outfile):
                         yield (values[d] - prev_values[d]) / prev_values[d]
                 changes = list(changes())
 
-                # Original metric
+                # change = Original metric
                 sum_squares = 0
                 for c in changes:
                     sum_squares += c * c
                 change = math.sqrt(sum_squares / (len(changes) - 1))
 
-                # Compensate for 18-day cyclic pattern,
+                # change2 = Compensate for 18-day cyclic pattern,
                 # visible in many but not all recent comparisons.
                 # The pattern sums to zero,
                 # so the simplest approach is to average it away.
                 sum_squares = 0
                 rolling_sum = sum(changes[:17])
+
+                # change3 = Try to highlight the 18-day cyclic pattern.
+                # This doesn't work very well.
+                devs=[0]*18
+
                 for i in range(17, len(changes)):
                     rolling_sum += changes[i]
                     mean = rolling_sum / 18
                     sum_squares += mean * mean
                     rolling_sum -= changes[i-17]
+
+                    dev = changes[i-18//2] - mean
+                    devs[i % 18] += dev
+
                 change2 = math.sqrt(sum_squares / (len(changes) - 17 - 1))
 
+                devs = [dev * dev for dev in devs]
+                change3 = math.sqrt(sum(devs) / (len(devs) - 1))
+
                 date = next(reversed(values.keys()))
-                writer.writerow([date, change, change2])
+                writer.writerow([date, change, change2, change3])
             prev_values = values
 
 outdir = Path('out/jump/')
