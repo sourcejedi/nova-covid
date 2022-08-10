@@ -21,4 +21,7 @@ get 'gs://covid-public-data/csv/RevisedStats/prevalence_history_202*.csv' \
 get 'gs://covid-public-data/csv/RevisedStats/incidence_history_202*.csv' \
         'incidence_history/' &&
 
+get 'gs://terraform-covid-website-data-prod/personalized_assets/backup_files/newly_sick_table_202*.csv' \
+        'newly_sick_table/' &&
+
 exit 0
