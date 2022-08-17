@@ -36,7 +36,7 @@ def jump(indir, prefix, outfile):
 
             region_field = heads.index('region')
 
-            field_names = ['pop_mid', 'covid_in_pop', 'active_cases']
+            field_names = ['pop_mid', 'covid_in_pop', 'active_cases', 'perc_users']
             for field_name in field_names:
                 try:
                     mid_field = heads.index(field_name)
@@ -46,6 +46,7 @@ def jump(indir, prefix, outfile):
             else:
                 raise Exception(f'{path}: could not find one of {field_names}')
 
+            date = None
             prev_date = None
             value = 0
             for line in f:
@@ -67,6 +68,10 @@ def jump(indir, prefix, outfile):
                     continue
                 pop_mid = float(row[mid_field])
                 value += pop_mid
+
+            if date is None:
+                continue # no lines. lol.
+
             values[date] = value
 
             if prev_values:                
@@ -77,7 +82,11 @@ def jump(indir, prefix, outfile):
                     while date not in prev_values:
                         date = next(last_dates)
 
-                    for _ in range(SKIP_LAST_DAYS):
+                    skip_last_days = SKIP_LAST_DAYS
+                    if prefix == 'newly_sick_table_':
+                        skip = 1
+
+                    for _ in range(skip_last_days):
                         date = next(last_dates)
                         assert date in prev_values
 
@@ -133,14 +142,18 @@ def jump(indir, prefix, outfile):
 outdir = Path('out/jump/')
 outdir.mkdir(parents=True, exist_ok=True)
 
-indir = Path('download/incidence/')
-with open(outdir / 'incidence.csv', 'w') as outfile:
-    jump(indir, 'incidence_', outfile)
+#indir = Path('download/incidence/')
+#with open(outdir / 'incidence.csv', 'w') as outfile:
+    #jump(indir, 'incidence_', outfile)
 
-indir = Path('download/incidence_history/')
-with open(outdir / 'incidence_history.csv', 'w') as outfile:
-    jump(indir, 'incidence_history_', outfile)
+#indir = Path('download/incidence_history/')
+#with open(outdir / 'incidence_history.csv', 'w') as outfile:
+    #jump(indir, 'incidence_history_', outfile)
 
-indir = Path('download/prevalence_history/')
-with open(outdir / 'prevalence_history.csv', 'w') as outfile:
-    jump(indir, 'prevalence_history_', outfile)
+#indir = Path('download/prevalence_history/')
+#with open(outdir / 'prevalence_history.csv', 'w') as outfile:
+    #jump(indir, 'prevalence_history_', outfile)
+
+indir = Path('download/newly_sick_table/')
+with open(outdir / 'newly_sick_table.csv', 'w') as outfile:
+    jump(indir, 'newly_sick_table_', outfile)
