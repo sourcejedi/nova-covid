@@ -142,17 +142,17 @@ def jump(indir, prefix, outfile):
 outdir = Path('out/jump/')
 outdir.mkdir(parents=True, exist_ok=True)
 
-#indir = Path('download/incidence/')
-#with open(outdir / 'incidence.csv', 'w') as outfile:
-    #jump(indir, 'incidence_', outfile)
+indir = Path('download/incidence/')
+with open(outdir / 'incidence.csv', 'w') as outfile:
+    jump(indir, 'incidence_', outfile)
 
-#indir = Path('download/incidence_history/')
-#with open(outdir / 'incidence_history.csv', 'w') as outfile:
-    #jump(indir, 'incidence_history_', outfile)
+indir = Path('download/incidence_history/')
+with open(outdir / 'incidence_history.csv', 'w') as outfile:
+    jump(indir, 'incidence_history_', outfile)
 
-#indir = Path('download/prevalence_history/')
-#with open(outdir / 'prevalence_history.csv', 'w') as outfile:
-    #jump(indir, 'prevalence_history_', outfile)
+indir = Path('download/prevalence_history/')
+with open(outdir / 'prevalence_history.csv', 'w') as outfile:
+    jump(indir, 'prevalence_history_', outfile)
 
 indir = Path('download/newly_sick_table/')
 with open(outdir / 'newly_sick_table.csv', 'w') as outfile:
