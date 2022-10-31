@@ -297,6 +297,9 @@ def main(infile, filename):
 
                     assert abs(values['factor_prob'] -
                         (values['corrected_covid_positive'] / values['corrected_covid_positive_prob'])) < 1e-11
+
+                    assert abs(values['factor'] -
+                        (values['corrected_covid_positive'] / values['maybe_symptom_based'])) < 1e-11
                 except AssertionError:
                     print ('Inconsistent values for region: ', region, date)
                     print (values)
