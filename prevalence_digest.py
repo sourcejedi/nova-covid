@@ -114,7 +114,7 @@ def parse_values(row):
         read_float('corrected_covid_positive')
 
     # It is not bounded by population, at least for individual strata.
-    #assert values['corrected_covid_positive'] < values['population']
+    #assert values['corrected_covid_positive'] <= values['population']
 
     # Is it theoretically possible for 'factor_prob' to be 'inf' as well?
     if values['unhealthy_unk_count'] == 0:
@@ -124,16 +124,14 @@ def parse_values(row):
         read_float('corrected_covid_positive_prob')
 
     # Sometimes it is several times higher than population, at least for individual strata.
-    #assert values['corrected_covid_positive_prob'] < values['population']
+    #assert values['corrected_covid_positive_prob'] <= values['population']
 
-    if values['respondent_count'] == 0:
+    if values['respondent_count'] == 0 or u_ratio == 0:
         assert values['predicted_covid_positive_prob'] == 0
         assert values['corrected_covid_positive_prob'] == 0
     else:
-        # u_ratio looks like it wants to be a multiplier for respondent_count,
-        # but we can't do that here because u_ratio may be zero.
-        assert abs(values['predicted_covid_positive_prob'] / values['respondent_count'] -
-                   values['corrected_covid_positive_prob'] / values['population'] * u_ratio) < 1e-11
+        assert abs(values['predicted_covid_positive_prob'] / (values['respondent_count'] * u_ratio) -
+                   values['corrected_covid_positive_prob'] / values['population']) < 1e-11
 
         # So predicted_covid_positive_prob is not bounded by unhealthy_count -
         # because it isn't bounded by respondent_count.
@@ -247,30 +245,29 @@ def main(infile, filename):
                 values = [value / N for value in totals.values()]
                 csv_out.writerow([region, utla, by_date[i][0]] + values)
 
-    if basename.startswith('corrected_prevalence_region_trend_'):
-        for ((region, utla), by_date) in digest_utla.items():
-            for (date, values) in by_date.items():
-                try:
-                    # Although this assertion does not hold for individual strata,
-                    # there have not been any breaches in the UTLA totals
-                    # in the region_trend file.  (Only in the age_trend file).
-                    assert values['corrected_covid_positive'] <= values['population']
-                    
-                    # These assertions don't hold for UTLA's.
-                    #assert values['predicted_covid_positive_prob'] <= values['respondent_count']
-                    #assert values['predicted_covid_positive_prob'] <= values['unhealthy_count']
-                    #assert values['corrected_covid_positive_prob'] <= values['population']
-                except AssertionError:
-                    print ('Inconsistent values for UTLA: ', region, utla, date)
-                    print (values)
-                    raise
+#     for ((region, utla), by_date) in digest_utla.items():
+#         for (date, values) in by_date.items():
+#             try:
+#                 # Although this assertion does not hold for individual strata,
+#                 # there have not been any breaches in the UTLA totals
+#                 # in the region_trend file.  Only in the age_trend file.
+#                 #assert values['corrected_covid_positive'] <= values['population']
+#                 
+#                 # These assertions do *not* hold for UTLA's.
+#                 #assert values['predicted_covid_positive_prob'] <= values['respondent_count']
+#                 #assert values['predicted_covid_positive_prob'] <= values['unhealthy_count']
+#                 #assert values['corrected_covid_positive_prob'] <= values['population']
+#             except AssertionError:
+#                 print ('Inconsistent values for UTLA: ', region, utla, date)
+#                 print (values)
+#                 raise
 
-    # with open('out/prevalence_digest/utla.csv', 'w') as outfile:
-    #     csv_out = csv.writer(outfile)
-    #     csv_out.writerow(['region', 'UTLA19CD', 'date'] + value_fields)
-    #     for ((region, utla), by_date) in digest_utla.items():
-    #         for (date, values) in by_date.items():
-    #             csv_out.writerow([region, utla, date] + list(values.values()))
+#    with open('out/prevalence_digest/utla.csv', 'w') as outfile:
+#        csv_out = csv.writer(outfile)
+#        csv_out.writerow(['region', 'UTLA19CD', 'date'] + value_fields)
+#        for ((region, utla), by_date) in digest_utla.items():
+#            for (date, values) in by_date.items():
+#                csv_out.writerow([region, utla, date] + list(values.values()))
 
     del digest_utla
 
