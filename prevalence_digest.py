@@ -94,20 +94,21 @@ def parse_values(row):
     # which are smoothed over two weeks and they will be gradually including more
     # users.
     #
-    # I don't see the new system on my phone because I haven't opted in to it.
-    # However I can still make reports.  So I'm curious about the word "eligible" here.
+    # I don't see the new system on my phone.  Either I declined to set it up,
+    # or I declined to agree to some new research consent as a pre-requisite.
+    # However I can still make reports.
     #
-    # You might think unhealthy_unk_count only counts the new-style reports that
-    # say "unhealthy".
+    # You might think unhealthy_count includes all "unhealthy" reports, and
+    # unhealthy_unk_count includes only new-style reports.
     #
-    # But that doesn't explain why u_fraction would be low e.g. 20% overall,
-    # 12% in the 35-54 age group, and why it *fell* during the first week,
+    # However, that wouldn't explain why u_fraction would be low e.g. 20% overall,
+    # 12% in the 35-54 age group.  And why it *fell* during the first week,
     # or why it stays nearly 100% for 0-17.  According to the blog, 0-17 can
     # only be reported by an adult on their behalf, and this process does not
-    # use the new UI.
+    # use the new UI...
     #
-    # Revised hypothesis: ZOE UTLA estimates are calculated from *old* style
-    # reports.
+    # Revised hypothesis: unhealthy_unk_count includes only *old* style reports.
+    # This sounds undesirable for the official UTLA estimates.
     #
     # This still doesn't explain why we appear to use respondent_count * u_fraction
     # as a denominator (see below).  I.e. why wouldn't the denominator just be the
