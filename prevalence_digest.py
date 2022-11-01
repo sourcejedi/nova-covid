@@ -51,15 +51,19 @@ def parse_values(row):
     # "based on the most recent report for each contributor
     # that logged during the previous 7 days".
     read_int('respondent_count')
+
     # Number of users who responded as "unwell".
     read_int('unhealthy_count')
-    # ?
+
+    # Used in u_fraction, see below.  Not clear why.
     read_int('unhealthy_unk_count')
-    # Perhaps the number of unwell responders on this day
-    # who are predicted to have covid by some symptom model?
+
+    # The number of unwell responders who are predicted to have covid,
+    # based on a symptom model.
     read_int('predicted_covid_positive_count')
-    
-    # ?
+
+    # *_prob fields feel like red herrings.  We can see some relationships,
+    # but I can't connect them to anything outside this file.
     read_float('predicted_covid_positive_prob')
 
     # Overall population for this strata, from census or whatever.
@@ -71,19 +75,18 @@ def parse_values(row):
     assert values['respondent_count'] <= values['population']
 
     assert values['unhealthy_count'] <= values['respondent_count']
-
     assert values['unhealthy_unk_count'] <= values['unhealthy_count']
+
+    if values['unhealthy_count']:
+        u_fraction = values['unhealthy_unk_count'] / values['unhealthy_count']
+    else:
+        u_fraction = 1
 
     # unhealthy_unk_count is usually the same as unhealthy_count, or one less
     # ... until 2022-06-22.
-    if values['unhealthy_count']:
-        u_ratio = values['unhealthy_unk_count'] / values['unhealthy_count']
-    else:
-        u_ratio = 1
-
     if row['date'] < '20220622':
         if values['unhealthy_count'] >= 10:
-            assert u_ratio >= 0.8
+            assert u_fraction >= 0.8
 
     assert values['predicted_covid_positive_count'] <= values['unhealthy_unk_count']
 
@@ -126,11 +129,11 @@ def parse_values(row):
     # Sometimes it is several times higher than population, at least for individual strata.
     #assert values['corrected_covid_positive_prob'] <= values['population']
 
-    if values['respondent_count'] == 0 or u_ratio == 0:
+    if values['respondent_count'] == 0 or u_fraction == 0:
         assert values['predicted_covid_positive_prob'] == 0
         assert values['corrected_covid_positive_prob'] == 0
     else:
-        assert abs(values['predicted_covid_positive_prob'] / (values['respondent_count'] * u_ratio) -
+        assert abs(values['predicted_covid_positive_prob'] / (values['respondent_count'] * u_fraction) -
                    values['corrected_covid_positive_prob'] / values['population']) < 1e-11
 
         # So predicted_covid_positive_prob is not bounded by unhealthy_count -
@@ -166,12 +169,14 @@ def parse_values(row):
     else:
         assert abs(values['factor'] -
                    (values['corrected_covid_positive'] / values['predicted_covid_positive_count']) *
-                   (values['respondent_count'] * u_ratio / values['population'])) < 1e-11
+                   (values['respondent_count'] * u_fraction / values['population'])) < 1e-11
 
-    values['maybe_symptom_based'] = 0
+    # Based on the above, here's how you scale predicted_covid_positive_count
+    # up to the whole population.
+    values['+ symptom_based'] = 0
     if values['predicted_covid_positive_count'] != 0:        
-        values['maybe_symptom_based'] = (values['predicted_covid_positive_count'] * 
-            values['population'] / (values['respondent_count'] * u_ratio))
+        values['+ symptom_based'] = (values['predicted_covid_positive_count'] *
+            values['population'] / (values['respondent_count'] * u_fraction))
     
     return values
 
@@ -198,18 +203,32 @@ def add_dict(a, b):
         else:
             a[key] = a[key] + b[key]
 
-def main(infile, filename):
-    basename = os.path.basename(filename)
+def main(infile, name):
+    name = os.path.basename(filename)
+    if name.endswith('.csv'):
+        name = name[:-len('.csv')]
 
-    # Nested dictionary: (region, utla) -> date -> values
-    digest_utla = {}
-    # Nested dictionary: date -> region -> values
+    # Nested dictionaries: date -> region -> values
     digest_date_region = {}
-
-    # TODO:
-    # * (date, age).  helps show ages of respondents
+    # (date, age_group) -> values
+    digest_age = {}
+    # Nested dictionaries: (region, utla) -> date -> values
+    digest_utla = {}
 
     for (keys, values) in parse_file(infile):
+        if keys.date not in digest_date_region:
+            digest_date_region[keys.date] = {}
+        if keys.region not in digest_date_region[keys.date]:
+            digest_date_region[keys.date][keys.region] = dict(values)
+        else:
+            add_dict(digest_date_region[keys.date][keys.region], values)
+
+        keys_age = (keys.date, keys.age_group)
+        if keys_age not in digest_age:
+            digest_age[keys_age] = dict(values)
+        else:
+            add_dict(digest_age[keys_age], values)
+
         keys_utla = (keys.region, keys.UTLA19CD)
         if keys_utla not in digest_utla:
             digest_utla[keys_utla] = {}
@@ -218,20 +237,71 @@ def main(infile, filename):
         else:
             add_dict(digest_utla[keys_utla][keys.date], values)
         
-        if keys.date not in digest_date_region:
-            digest_date_region[keys.date] = {}
-        if keys.region not in digest_date_region[keys.date]:
-            digest_date_region[keys.date][keys.region] = dict(values)
-        else:
-            add_dict(digest_date_region[keys.date][keys.region], values)            
-
     value_fields = list(values.keys())
     ZERO_VALUES = {field:0 for field in value_fields}
 
-    os.makedirs('out/prevalence_digest/', exist_ok=True)
+    outdir = f'out/prevalence_digest/{name}/'
+    os.makedirs(outdir, exist_ok=True)
+
+    with open(outdir + 'age.csv', 'w') as outfile:
+        csv_out = csv.writer(outfile)
+        csv_out.writerow(['date', 'age_group'] + value_fields)
+        for ((date, age_group), values) in digest_age.items():
+            csv_out.writerow([date, age_group] + list(values.values()))
+
+    if name.startswith('corrected_prevalence_age_trend_'):
+        for ((date, age_group), values) in digest_age.items():
+            try:
+                if values['factor'] == float('inf'):
+                    continue
+
+                assert values['corrected_covid_positive'] <= values['population']
+
+                assert abs(values['factor'] -
+                    (values['corrected_covid_positive'] / values['+ symptom_based'])) < 1e-11
+
+                assert abs(values['factor_prob'] -
+                    (values['corrected_covid_positive'] / values['corrected_covid_positive_prob'])) < 1e-11
+            except AssertionError:
+                print ('Inconsistent values for age_group: ', age_group, date)
+                print (values)
+                raise
+
+    with open(outdir + 'region.csv', 'w') as outfile:
+        csv_out = csv.writer(outfile)
+        csv_out.writerow(['date', 'region'] + value_fields)
+        for (date, by_region) in digest_date_region.items():
+            en = dict(ZERO_VALUES)
+            uk = dict(ZERO_VALUES)
+            for (region, values) in by_region.items():
+                csv_out.writerow([date, region] + list(values.values()))
+                add_dict(uk, values)
+                if region not in ['Wales', 'Scotland', 'Northern Ireland']:
+                    add_dict(en, values)
+            csv_out.writerow([date, 'England'] + list(en.values()))
+            csv_out.writerow([date, 'UK'] + list(uk.values()))
+
+    if name.startswith('corrected_prevalence_region_trend_'):
+        for (date, by_region) in digest_date_region.items():
+            for (region, values) in by_region.items():
+                try:
+                    if values['factor'] == float('inf'):
+                       continue
+
+                    assert values['corrected_covid_positive'] <= values['population']
+
+                    assert abs(values['factor_prob'] -
+                        (values['corrected_covid_positive'] / values['corrected_covid_positive_prob'])) < 1e-11
+
+                    assert abs(values['factor'] -
+                        (values['corrected_covid_positive'] / values['+ symptom_based'])) < 1e-11
+                except AssertionError:
+                    print ('Inconsistent values for region: ', region, date)
+                    print (values)
+                    raise
 
     # 8-day average, as used by official UTLA estimates.
-    with open('out/prevalence_digest/utla_8d_average.csv', 'w') as outfile:
+    with open(outdir + 'utla_8d_average.csv', 'w') as outfile:
         csv_out = csv.writer(outfile)
         csv_out.writerow(['region', 'UTLA19CD', 'date'] + value_fields)
         for ((region, utla), by_date) in digest_utla.items():
@@ -271,41 +341,9 @@ def main(infile, filename):
 
     del digest_utla
 
-    with open('out/prevalence_digest/region.csv', 'w') as outfile:
-        csv_out = csv.writer(outfile)
-        csv_out.writerow(['date', 'region'] + value_fields)
-        for (date, by_region) in digest_date_region.items():
-            en = dict(ZERO_VALUES)
-            uk = dict(ZERO_VALUES)
-            for (region, values) in by_region.items():
-                
-                
-                csv_out.writerow([date, region] + list(values.values()))
-                add_dict(uk, values)
-                if region not in ['Wales', 'Scotland', 'Northern Ireland']:
-                    add_dict(en, values)
-            csv_out.writerow([date, 'England'] + list(en.values()))
-            csv_out.writerow([date, 'UK'] + list(uk.values()))
-
-    
-    if basename.startswith('corrected_prevalence_region_trend_'):
-        for (date, by_region) in digest_date_region.items():
-            for (region, values) in by_region.items():
-                try:
-                    if values['factor'] == float('inf'):
-                        continue
-
-                    assert abs(values['factor_prob'] -
-                        (values['corrected_covid_positive'] / values['corrected_covid_positive_prob'])) < 1e-11
-
-                    assert abs(values['factor'] -
-                        (values['corrected_covid_positive'] / values['maybe_symptom_based'])) < 1e-11
-                except AssertionError:
-                    print ('Inconsistent values for region: ', region, date)
-                    print (values)
-                    raise
 
     del digest_date_region
+    del digest_age
 
 
 if __name__ == '__main__':
