@@ -77,6 +77,44 @@ def parse_values(row):
     assert values['unhealthy_count'] <= values['respondent_count']
     assert values['unhealthy_unk_count'] <= values['unhealthy_count']
 
+    # I can think of one hypothesis for unhealthy_unk_count.
+    # Over June, ZOE transitioned to a different reporting UI.
+    # It requires some user setup:
+    # https://health-study.joinzoe.com/post/new-daily-report-usual-self
+    #
+    # Initially, new-style reports were not used in published estimates.
+    # At the same time we saw sharp drops in the number of reports used
+    # in the data files ("active_users").
+    #
+    # From the daily PDF report.
+    # 2022-06-22: From 22nd June, the new symptom reporting flow is available to 100%
+    # of App users who consented to the ZOE Health Study. We have fully migrated the
+    # COVID figures to the new symptom reporting flow and from this day, we compute
+    # our estimates on 100% of the eligible user base, except for local prevalence figures
+    # which are smoothed over two weeks and they will be gradually including more
+    # users.
+    #
+    # I don't see the new system on my phone because I haven't opted in to it.
+    # However I can still make reports.  So I'm curious about the word "eligible" here.
+    #
+    # You might think unhealthy_unk_count only counts the new-style reports that
+    # say "unhealthy".
+    #
+    # But that doesn't explain why u_fraction would be low e.g. 20% overall,
+    # 12% in the 35-54 age group, and why it *fell* during the first week,
+    # or why it stays nearly 100% for 0-17.  According to the blog, 0-17 can
+    # only be reported by an adult on their behalf, and this process does not
+    # use the new UI.
+    #
+    # Revised hypothesis: ZOE UTLA estimates are calculated from *old* style
+    # reports.
+    #
+    # This still doesn't explain why we appear to use respondent_count * u_fraction
+    # as a denominator (see below).  I.e. why wouldn't the denominator just be the
+    # total number of reports from users who didn't opt in to the new UI?
+    # It's as if that number is somehow not available, and we're using a crude
+    # approximation instead.
+
     if values['unhealthy_count']:
         u_fraction = values['unhealthy_unk_count'] / values['unhealthy_count']
     else:
@@ -215,6 +253,9 @@ def main(infile, name):
     # Nested dictionaries: (region, utla) -> date -> values
     digest_utla = {}
 
+    digest_imd = {}
+    digest_age_imd = {}
+
     for (keys, values) in parse_file(infile):
         if keys.date not in digest_date_region:
             digest_date_region[keys.date] = {}
@@ -236,6 +277,18 @@ def main(infile, name):
             digest_utla[keys_utla][keys.date] = dict(values)
         else:
             add_dict(digest_utla[keys_utla][keys.date], values)
+
+        keys_imd = (keys.date, keys.imd)
+        if keys_imd not in digest_imd:
+            digest_imd[keys_imd] = dict(values)
+        else:
+            add_dict(digest_imd[keys_imd], values)
+
+        keys_age_imd = (keys.date, keys.age_group, keys.imd)
+        if keys_age_imd not in digest_age_imd:
+            digest_age_imd[keys_age_imd] = dict(values)
+        else:
+            add_dict(digest_age_imd[keys_age_imd], values)
         
     value_fields = list(values.keys())
     ZERO_VALUES = {field:0 for field in value_fields}
@@ -245,8 +298,9 @@ def main(infile, name):
 
     with open(outdir + 'age.csv', 'w') as outfile:
         csv_out = csv.writer(outfile)
-        csv_out.writerow(['date', 'age_group'] + value_fields)
+        csv_out.writerow(['date', 'age_group'] + value_fields) # + ['+ respondents_per_population')
         for ((date, age_group), values) in digest_age.items():
+            #per = values['respondents'] / values['population']
             csv_out.writerow([date, age_group] + list(values.values()))
 
     if name.startswith('corrected_prevalence_age_trend_'):
@@ -300,6 +354,9 @@ def main(infile, name):
                     print (values)
                     raise
 
+    del digest_date_region
+    del digest_age
+
     # 8-day average, as used by official UTLA estimates.
     with open(outdir + 'utla_8d_average.csv', 'w') as outfile:
         csv_out = csv.writer(outfile)
@@ -341,9 +398,22 @@ def main(infile, name):
 
     del digest_utla
 
+    with open(outdir + 'imd.csv', 'w') as outfile:
+        csv_out = csv.writer(outfile)
+        csv_out.writerow(['date', 'imd'] + value_fields) # + ['+ respondents_per_population')
+        for ((date, imd), values) in digest_imd.items():
+            #per = values['respondents'] / values['population']
+            csv_out.writerow([date, imd] + list(values.values()))
+    del digest_imd
 
-    del digest_date_region
-    del digest_age
+    with open(outdir + 'age_imd.csv', 'w') as outfile:
+        csv_out = csv.writer(outfile)
+        csv_out.writerow(['date', 'age_group', 'imd'] + value_fields) # + ['+ respondents_per_population')
+        for ((date, age_group, imd), values) in digest_age_imd.items():
+            #per = values['respondents'] / values['population']
+            csv_out.writerow([date, age_group, imd] + list(values.values()))
+    del digest_age_imd
+
 
 
 if __name__ == '__main__':
