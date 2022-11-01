@@ -233,13 +233,24 @@ def parse_file(infile):
     
         yield Record(keys, values)
 
-def add_dict(a, b):
+def add_values(a, b):
     for (key, value) in b.items():
         if key in ['factor', 'factor_prob']:
             if a[key] != b[key]:
                 a[key] == ''
         else:
             a[key] = a[key] + b[key]
+
+# https://www.mikulskibartosz.name/wilson-score-in-python-example/
+from math import sqrt
+def wilson(p, n, z = 1.96):
+    denominator = 1 + z**2/n
+    centre_adjusted_probability = p + z*z / (2*n)
+    adjusted_standard_deviation = sqrt((p*(1 - p) + z*z / (4*n)) / n)
+
+    lower_bound = (centre_adjusted_probability - z*adjusted_standard_deviation) / denominator
+    upper_bound = (centre_adjusted_probability + z*adjusted_standard_deviation) / denominator
+    return (lower_bound, upper_bound)
 
 def main(infile, name):
     name = os.path.basename(filename)
@@ -262,13 +273,13 @@ def main(infile, name):
         if keys.region not in digest_date_region[keys.date]:
             digest_date_region[keys.date][keys.region] = dict(values)
         else:
-            add_dict(digest_date_region[keys.date][keys.region], values)
+            add_values(digest_date_region[keys.date][keys.region], values)
 
         keys_age = (keys.date, keys.age_group)
         if keys_age not in digest_age:
             digest_age[keys_age] = dict(values)
         else:
-            add_dict(digest_age[keys_age], values)
+            add_values(digest_age[keys_age], values)
 
         keys_utla = (keys.region, keys.UTLA19CD)
         if keys_utla not in digest_utla:
@@ -276,19 +287,19 @@ def main(infile, name):
         if keys.date not in digest_utla[keys_utla]:
             digest_utla[keys_utla][keys.date] = dict(values)
         else:
-            add_dict(digest_utla[keys_utla][keys.date], values)
+            add_values(digest_utla[keys_utla][keys.date], values)
 
         keys_imd = (keys.date, keys.imd)
         if keys_imd not in digest_imd:
             digest_imd[keys_imd] = dict(values)
         else:
-            add_dict(digest_imd[keys_imd], values)
+            add_values(digest_imd[keys_imd], values)
 
         keys_age_imd = (keys.date, keys.age_group, keys.imd)
         if keys_age_imd not in digest_age_imd:
             digest_age_imd[keys_age_imd] = dict(values)
         else:
-            add_dict(digest_age_imd[keys_age_imd], values)
+            add_values(digest_age_imd[keys_age_imd], values)
         
     value_fields = list(values.keys())
     ZERO_VALUES = {field:0 for field in value_fields}
@@ -329,9 +340,9 @@ def main(infile, name):
             uk = dict(ZERO_VALUES)
             for (region, values) in by_region.items():
                 csv_out.writerow([date, region] + list(values.values()))
-                add_dict(uk, values)
+                add_values(uk, values)
                 if region not in ['Wales', 'Scotland', 'Northern Ireland']:
-                    add_dict(en, values)
+                    add_values(en, values)
             csv_out.writerow([date, 'England'] + list(en.values()))
             csv_out.writerow([date, 'UK'] + list(uk.values()))
 
@@ -360,7 +371,10 @@ def main(infile, name):
     # 8-day average, as used by official UTLA estimates.
     with open(outdir + 'utla_8d_average.csv', 'w') as outfile:
         csv_out = csv.writer(outfile)
-        csv_out.writerow(['region', 'UTLA19CD', 'date'] + value_fields)
+        csv_out.writerow(['region', 'UTLA19CD', 'date'] +
+                         value_fields +
+                         ['+ percent',
+                          '+ percent_lo', '+ percent_hi'])
         for ((region, utla), by_date) in digest_utla.items():
             by_date = list(by_date.items())
             
@@ -368,9 +382,19 @@ def main(infile, name):
             for i in range(N-1, len(by_date)):
                 totals = dict(ZERO_VALUES)
                 for j in range(i-(N-1), i+1):
-                    add_dict(totals, by_date[j][1])
-                values = [value / N for value in totals.values()]
-                csv_out.writerow([region, utla, by_date[i][0]] + values)
+                    add_values(totals, by_date[j][1])
+                values = { key:value / N for (key, value) in totals.items() }
+
+                values['+ percent'] = values['corrected_covid_positive'] / values['population']
+                # Note lack of u_fraction.  But this is what matches, sigh.
+                # Also, calculating it *after* multiplying by factor sounds
+                # like a really big problem to me?
+                (values['+ percent_lo'],
+                 values['+ percent_hi']) = (
+                    wilson(values['+ percent'],
+                           values['respondent_count']))
+
+                csv_out.writerow([region, utla, by_date[i][0]] + list(values.values()))
 
 #     for ((region, utla), by_date) in digest_utla.items():
 #         for (date, values) in by_date.items():
