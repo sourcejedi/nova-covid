@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 #
-# If you can use pypy3, this program will run slightly faster.  Heh.
+# If you use pypy3, this program can run up to 2x faster. Heh.
 #
-# This program relies on dicts preserving insertion order,
+# This program relies on dictionaries preserving insertion order,
 # as guaranteed since python 3.7.
 #
 # We also assume input lines are in a convenient order.
@@ -23,6 +23,7 @@ KEYS = [
 Keys = namedtuple('Keys', KEYS)
 
 Record = namedtuple('Record', ('keys', 'values'))
+LSOA_Values = namedtuple('LSOA_Values', ('LSOA_count', 'population'))
 
 def parse_values(row):
     values = {}
@@ -42,6 +43,11 @@ def parse_values(row):
         assert value_int == value
         assert value_int >= 0
         values[field] = value_int
+
+    # We deal with this field later.  Don't worry about it in this function.
+    # Spoiler: it is nothing to do with gender.
+    read_int('gender')
+    assert values['gender'] > 0
 
     # Number of responses.  From unique users over the last N days.
     # Comparing the other time series shows that 1 < N < 14.
@@ -133,10 +139,11 @@ def parse_values(row):
     # corrected_prevalence_region_*.csv and add it up for a region, it matches
     # the official ZOE prevalence for that region.
     #
-    # Although the date is off by one day IMO.  ZOE regional prevalence is
+    # Although, arguably the date is off.  ZOE regional prevalence is
     # calculated from ZOE regional incidence (see prevalence_from_incidence/).
     # The date specified for ZOE regional incidence is publish date - 2,
-    # not publish date - 1.
+    # not publish date - 1.  Also, regional incidence is based on a 14-day
+    # average.
     #
     # If you average it over 8 (!) days for a UTLA, it matches
     # the official ZOE prevalence for that UTLA.
@@ -268,40 +275,82 @@ def main(infile, name):
     digest_imd = {}
     digest_age_imd = {}
 
+    # lad16cd's don't seem to be unique?  Doesn't matter for our purposes.
+    # (region, utla, lad, imd) -> lsoa_count.
+    digest_lsoa = {}
+
     for (keys, values) in parse_file(infile):
-        if keys.date not in digest_date_region:
-            digest_date_region[keys.date] = {}
-        if keys.region not in digest_date_region[keys.date]:
-            digest_date_region[keys.date][keys.region] = dict(values)
+
+        # The column labeled 'gender' obeys the rule defined below.
+        # Note this means it is invariant by date.
+        #
+        # It is actually the number of Lower-layer Super Output Areas
+        # for each (region, utla, lad, imd).  The IMD of each ZOE user
+        # is estimated from their LSOA.
+        keys_lsoa = (keys.region, keys.UTLA19CD, keys.lad16cd, keys.imd)
+        lsoa_count = values['gender']
+
+        v = digest_lsoa.get(keys_lsoa, None)
+        if v is None:
+            v = lsoa_count
+            digest_lsoa[keys_lsoa] = v
         else:
-            add_values(digest_date_region[keys.date][keys.region], values)
+            if v != lsoa_count:
+                print ("Inconsistent value in field 'gender' (which is not gender)")
+                print ("keys = ", keys)
+                print ("values = ", values)
+                print ("Expected value = ", v)
+                sys.exit(1)
+        # Get rid of it.
+        del values['gender']
+
+        v = digest_date_region.get(keys.date, None)
+        if v is None:
+            v = {}
+            digest_date_region[keys.date] = v
+        v2 = v.get(keys.region)
+        if v2 is None:
+            v2 = dict(values)
+            v[keys.region] = v2
+        else:
+            add_values(v2, values)
 
         keys_age = (keys.date, keys.age_group)
-        if keys_age not in digest_age:
-            digest_age[keys_age] = dict(values)
+        v = digest_age.get(keys_age, None)
+        if v is None:
+            v = dict(values)
+            digest_age[keys_age] = v
         else:
-            add_values(digest_age[keys_age], values)
+            add_values(v, values)
 
         keys_utla = (keys.region, keys.UTLA19CD)
-        if keys_utla not in digest_utla:
-            digest_utla[keys_utla] = {}
-        if keys.date not in digest_utla[keys_utla]:
-            digest_utla[keys_utla][keys.date] = dict(values)
+        v = digest_utla.get(keys_utla, None)
+        if v is None:
+            v = {}
+            digest_utla[keys_utla] = v
+        v2 = v.get(keys.date, None)
+        if v2 is None:
+            v2 = dict(values)
+            v[keys.date] = v2
         else:
-            add_values(digest_utla[keys_utla][keys.date], values)
+            add_values(v2, values)
 
         keys_imd = (keys.date, keys.imd)
-        if keys_imd not in digest_imd:
-            digest_imd[keys_imd] = dict(values)
+        v = digest_imd.get(keys_imd, None)
+        if v is None:
+            v = dict(values)
+            digest_imd[keys_imd] = v
         else:
-            add_values(digest_imd[keys_imd], values)
+            add_values(v, values)
 
         keys_age_imd = (keys.date, keys.age_group, keys.imd)
-        if keys_age_imd not in digest_age_imd:
-            digest_age_imd[keys_age_imd] = dict(values)
+        v = digest_age_imd.get(keys_age_imd, None)
+        if v is None:
+            v = dict(values)
+            digest_age_imd[keys_age_imd] = v
         else:
-            add_values(digest_age_imd[keys_age_imd], values)
-        
+            add_values(v, values)
+
     value_fields = list(values.keys())
     ZERO_VALUES = {field:0 for field in value_fields}
 
@@ -310,10 +359,10 @@ def main(infile, name):
 
     with open(outdir + 'age.csv', 'w') as outfile:
         csv_out = csv.writer(outfile)
-        csv_out.writerow(['date', 'age_group'] + value_fields) # + ['+ respondents_per_population')
+        csv_out.writerow(['date', 'age_group'] + value_fields + ['+ response_rate'])
         for ((date, age_group), values) in digest_age.items():
-            #per = values['respondents'] / values['population']
-            csv_out.writerow([date, age_group] + list(values.values()))
+            response_rate = values['respondent_count'] / values['population']
+            csv_out.writerow([date, age_group] + list(values.values()) + [response_rate])
 
     if name.startswith('corrected_prevalence_age_trend_'):
         for ((date, age_group), values) in digest_age.items():
@@ -366,16 +415,33 @@ def main(infile, name):
                     print (values)
                     raise
 
-    del digest_date_region
-    del digest_age
+    with open(outdir + 'imd.csv', 'w') as outfile:
+        csv_out = csv.writer(outfile)
+        csv_out.writerow(['date', 'imd'] + value_fields + ['+ response_rate'])
+        for ((date, imd), values) in digest_imd.items():
+            response_rate = values['respondent_count'] / values['population']
+            csv_out.writerow([date, imd] + list(values.values())+ [response_rate])
+
+    with open(outdir + 'age_imd.csv', 'w') as outfile:
+        csv_out = csv.writer(outfile)
+        csv_out.writerow(['date', 'age_group', 'imd'] + value_fields + ['+ response_rate'])
+        for ((date, age_group, imd), values) in digest_age_imd.items():
+            response_rate = values['respondent_count'] / values['population']
+            csv_out.writerow([date, age_group, imd] + list(values.values()) + [response_rate])
+
+    with open(outdir + 'lsoa_count.csv', 'w') as outfile:
+        csv_out = csv.writer(outfile)
+        csv_out.writerow(['region', 'UTLA19CD', 'lad16cd', 'imd', '+ LSOA_count'])
+        for ((region, utla, lad, imd), lsoa_count) in digest_lsoa.items():
+            csv_out.writerow([region, utla, lad, imd, lsoa_count])
 
     # 8-day average, as used by official UTLA estimates.
     with open(outdir + 'utla_8d_average.csv', 'w') as outfile:
         csv_out = csv.writer(outfile)
         csv_out.writerow(['region', 'UTLA19CD', 'date'] +
                          value_fields +
-                         ['+ percent',
-                          '+ percent_lo', '+ percent_hi'])
+                         ['+ covid_rate',
+                          '+ covid_rate_lo', '+ covid_rate_hi'])
         for ((region, utla), by_date) in digest_utla.items():
             by_date = list(by_date.items())
             
@@ -386,16 +452,23 @@ def main(infile, name):
                     add_values(totals, by_date[j][1])
                 values = { key:value / N for (key, value) in totals.items() }
 
-                values['+ percent'] = values['corrected_covid_positive'] / values['population']
+                values['+ covid_rate'] = values['corrected_covid_positive'] / values['population']
                 # Note lack of u_fraction.  But this is what matches, sigh.
                 # Also, calculating it *after* multiplying by factor sounds
-                # like a really big problem to me?
-                (values['+ percent_lo'],
-                 values['+ percent_hi']) = (
-                    wilson(values['+ percent'],
+                # like a big problem to me?
+                (values['+ covid_rate_lo'],
+                 values['+ covid_rate_hi']) = (
+                    wilson(values['+ covid_rate'],
                            values['respondent_count']))
 
                 csv_out.writerow([region, utla, by_date[i][0]] + list(values.values()))
+
+#    with open('out/prevalence_digest/utla.csv', 'w') as outfile:
+#        csv_out = csv.writer(outfile)
+#        csv_out.writerow(['region', 'UTLA19CD', 'date'] + value_fields)
+#        for ((region, utla), by_date) in digest_utla.items():
+#            for (date, values) in by_date.items():
+#                csv_out.writerow([region, utla, date] + list(values.values()))
 
 #     for ((region, utla), by_date) in digest_utla.items():
 #         for (date, values) in by_date.items():
@@ -413,32 +486,6 @@ def main(infile, name):
 #                 print ('Inconsistent values for UTLA: ', region, utla, date)
 #                 print (values)
 #                 raise
-
-#    with open('out/prevalence_digest/utla.csv', 'w') as outfile:
-#        csv_out = csv.writer(outfile)
-#        csv_out.writerow(['region', 'UTLA19CD', 'date'] + value_fields)
-#        for ((region, utla), by_date) in digest_utla.items():
-#            for (date, values) in by_date.items():
-#                csv_out.writerow([region, utla, date] + list(values.values()))
-
-    del digest_utla
-
-    with open(outdir + 'imd.csv', 'w') as outfile:
-        csv_out = csv.writer(outfile)
-        csv_out.writerow(['date', 'imd'] + value_fields) # + ['+ respondents_per_population')
-        for ((date, imd), values) in digest_imd.items():
-            #per = values['respondents'] / values['population']
-            csv_out.writerow([date, imd] + list(values.values()))
-    del digest_imd
-
-    with open(outdir + 'age_imd.csv', 'w') as outfile:
-        csv_out = csv.writer(outfile)
-        csv_out.writerow(['date', 'age_group', 'imd'] + value_fields) # + ['+ respondents_per_population')
-        for ((date, age_group, imd), values) in digest_age_imd.items():
-            #per = values['respondents'] / values['population']
-            csv_out.writerow([date, age_group, imd] + list(values.values()))
-    del digest_age_imd
-
 
 
 if __name__ == '__main__':
