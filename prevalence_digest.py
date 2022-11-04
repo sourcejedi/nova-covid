@@ -3,9 +3,10 @@
 # If you use pypy3, this program can run up to 2x faster. Heh.
 #
 # This program relies on dictionaries preserving insertion order,
-# as guaranteed since python 3.7.
+# which is guaranteed since python 3.7.
 #
-# We also assume input lines are in a convenient order.
+# We also assume input lines are in a convenient order,
+# where the date value never decreases.
 
 import csv
 import os
@@ -13,17 +14,20 @@ import os.path
 import sys
 from collections import namedtuple
 
-KEYS = [
+if sys.version_info < (3, 7):
+    sys.exit('This script is designed to run on python 3.7 or higher')
+
+
+KEY_FIELDS = [
     'date',         # publish date - 1.
     'region',       # large region, originally based on the England NHS regions.
     'UTLA19CD',     # upper tier local authority
     'lad16cd',      # local authority district
     'age_group',    # age group
     'imd']          # index of material deprivation (1 to 3)
-Keys = namedtuple('Keys', KEYS)
-
+Keys = namedtuple('Keys', KEY_FIELDS)
 Record = namedtuple('Record', ('keys', 'values'))
-LSOA_Values = namedtuple('LSOA_Values', ('LSOA_count', 'population'))
+
 
 def parse_values(row):
     values = {}
@@ -47,21 +51,23 @@ def parse_values(row):
     # We deal with this field later.  Don't worry about it in this function.
     # Spoiler: it is nothing to do with gender.
     read_int('gender')
-    assert values['gender'] > 0
 
-    # Number of responses.  From unique users over the last N days.
-    # Comparing the other time series shows that 1 < N < 14.
-    #
-    # Based on the "hotspots" paper, N might equal 7.
-    # That would be consistent with recent daily PDF reports:
-    # "based on the most recent report for each contributor
-    # that logged during the previous 7 days".
+    # The number of users who responded in the last 7 days.
+    # This number of days is consistent with:
+    #  1. The 2020 paper titled "Detecting COVID-19 infection hotspots..."
+    #  2. Where the current daily PDF report says "based on the most recent
+    #     report for each contributor that logged during the previous 7 days".
+    #  3. Comparing the unhealthy/respondent fraction to the daily numbers in
+    #     newly_sick_table*.csv, around the sharp edges from the anomaly here:
+    #     https://sourcejedi.github.io/2022/08/24/zoe-covid-3-day-bug.html
     read_int('respondent_count')
 
-    # Number of users who responded as "unwell".
+    # The number of users in the last 7 days, who logged feeling "unwell"
+    # in their most recent response.
     read_int('unhealthy_count')
 
-    # Used in u_fraction, see below.  Not clear why.
+    # Used in u_fraction (below).  Does not directly correspond to
+    # official explanations.
     read_int('unhealthy_unk_count')
 
     # The number of unwell responders who are predicted to have covid,
@@ -83,16 +89,25 @@ def parse_values(row):
     assert values['unhealthy_count'] <= values['respondent_count']
     assert values['unhealthy_unk_count'] <= values['unhealthy_count']
 
-    # I can think of one hypothesis for unhealthy_unk_count.
-    # Over June, ZOE transitioned to a different reporting UI.
-    # It requires some user setup:
-    # https://health-study.joinzoe.com/post/new-daily-report-usual-self
+    # I can think of one hypothesis for unhealthy_unk_count.  In June 2022,
+    # ZOE transitioned to a new reporting method.  This requires setting up a
+    # "usual self" (and AFAICT, a new research consent).  If (like me) you
+    # haven't set up the new method, you can still make reports using the old
+    # method.
+    # Link: https://health-study.joinzoe.com/post/new-daily-report-usual-self
     #
     # Initially, new-style reports were not used in published estimates.
-    # At the same time we saw sharp drops in the number of reports used
-    # in the data files ("active_users").
+    # At the same time we saw a temporary sharp drop in the number of reports
+    # used in the incidence data files ("active_users" column).
     #
-    # From the daily PDF report.
+    # From the daily PDF report:
+    # 2022-06-10: The new symptom reporting flow is available to 80% of App users who
+    # consented to the ZOE Health Study. While we transition to this new flow, COVID
+    # figures will be computed on the remaining 20% of users. As a result, during the
+    # transition period, there may be greater uncertainty around our COVID figures due to
+    # the smaller sample size. We will provide a further update once we have fully
+    # migrated the COVID figures to the new symptom reporting flow..
+    #
     # 2022-06-22: From 22nd June, the new symptom reporting flow is available to 100%
     # of App users who consented to the ZOE Health Study. We have fully migrated the
     # COVID figures to the new symptom reporting flow and from this day, we compute
@@ -100,35 +115,32 @@ def parse_values(row):
     # which are smoothed over two weeks and they will be gradually including more
     # users.
     #
-    # I don't see the new system on my phone.  Either I declined to set it up,
-    # or I declined to agree to some new research consent as a pre-requisite.
-    # However I can still make reports.
-    #
-    # You might think unhealthy_count includes all "unhealthy" reports, and
+    # Looking at all the equations with u_fraction below, you might guess
+    # unhealthy_count includes all "unhealthy" reports, and
     # unhealthy_unk_count includes only new-style reports.
     #
-    # However, that wouldn't explain why u_fraction would be low e.g. 20% overall,
-    # 12% in the 35-54 age group.  And why it *fell* during the first week,
-    # or why it stays nearly 100% for 0-17.  According to the blog, 0-17 can
-    # only be reported by an adult on their behalf, and this process does not
-    # use the new UI...
+    # However, that wouldn't explain why u_fraction would be low e.g. 20%
+    # overall, 12% in the 35-54 age group.  And why it *fell* during the first
+    # week, or why it stays nearly 100% for 0-17.  According to the blog, 0-17
+    # can only be reported by an adult on their behalf, and this process does
+    # not use the new method...
     #
     # Revised hypothesis: unhealthy_unk_count includes only *old* style reports.
     # This sounds undesirable for the official UTLA estimates.
     #
-    # This still doesn't explain why we appear to use respondent_count * u_fraction
-    # as a denominator (see below).  I.e. why wouldn't the denominator just be the
-    # total number of reports from users who didn't opt in to the new UI?
-    # It's as if that number is somehow not available, and we're using a crude
-    # approximation instead.
+    # This still doesn't explain why we appear to use
+    # (respondent_count * u_fraction) as a denominator.  I.e. why wouldn't the
+    # denominator just be the total number of reports from users who didn't
+    # opt in to the new method?  It's as if that number is somehow not
+    # available, and we're using a crude approximation instead.
 
     if values['unhealthy_count']:
         u_fraction = values['unhealthy_unk_count'] / values['unhealthy_count']
     else:
         u_fraction = 1
 
-    # unhealthy_unk_count is usually the same as unhealthy_count, or one less
-    # ... until 2022-06-22.
+    # Until 2022-06-22, unhealthy_unk_count is usually the same as
+    # unhealthy_count, or one less.
     if row['date'] < '20220622':
         if values['unhealthy_count'] >= 10:
             assert u_fraction >= 0.8
@@ -146,9 +158,9 @@ def parse_values(row):
     # average.
     #
     # If you average it over 8 (!) days for a UTLA, it matches
-    # the official ZOE prevalence for that UTLA.
+    # the estimates on the official ZOE map and "watch list".
     #
-    # I think if you look at corrected_prevalence_age_*.csv and add it up
+    # Similarly if you look at corrected_prevalence_age_*.csv and add it up
     # for an age group, it matches the official graphs of UK prevalence by age.
 
     # 'factor' is inf for Northern Ireland districts on date == '20220920',
@@ -165,27 +177,11 @@ def parse_values(row):
     # It is not bounded by population, at least for individual strata.
     #assert values['corrected_covid_positive'] <= values['population']
 
-    # Is it theoretically possible for 'factor_prob' to be 'inf' as well?
     if values['unhealthy_unk_count'] == 0:
         assert row['corrected_covid_positive_prob'] == ''
         values['corrected_covid_positive_prob'] = 0.0
     else:
         read_float('corrected_covid_positive_prob')
-
-    # Sometimes it is several times higher than population, at least for individual strata.
-    #assert values['corrected_covid_positive_prob'] <= values['population']
-
-    if values['respondent_count'] == 0 or u_fraction == 0:
-        assert values['predicted_covid_positive_prob'] == 0
-        assert values['corrected_covid_positive_prob'] == 0
-    else:
-        assert abs(values['predicted_covid_positive_prob'] / (values['respondent_count'] * u_fraction) -
-                   values['corrected_covid_positive_prob'] / values['population']) < 1e-11
-
-        # So predicted_covid_positive_prob is not bounded by unhealthy_count -
-        # because it isn't bounded by respondent_count.
-        #assert values['predicted_covid_positive_prob'] <= values['respondent_count']
-        #assert values['predicted_covid_positive_prob'] <= values['unhealthy_count']
 
     # If you look at rows with the same (date, region) in
     # corrected_prevalence_region_*.csv, factor is always the same.
@@ -193,7 +189,7 @@ def parse_values(row):
     # (sum(corrected_covid_positive) / sum(corrected_covid_positive_prob))
     # We check this assertion in main().
     #
-    # I think corrected_prevalence_age_* does the same except with
+    # Corrected_prevalence_age_* does the same except with
     # (date, age_group).
     #
     # (It's as if they endorse their stratification of P_S by region,
@@ -207,18 +203,33 @@ def parse_values(row):
     # The change in factor is proportional to the change in factor_prob.
     read_float('factor')
     read_float('factor_prob')
-    assert values['factor'] > 0
-    assert values['factor_prob'] > 0
 
-    if values['predicted_covid_positive_count'] == 0:
+    if values['predicted_covid_positive_count'] == 0 or values['population'] == 0:
+        # This includes all cases where respondent_count == 0, or
+        # u_fraction == 0.  In these cases corrected_covid_positive
+        # should be unknown, indeed the file shows it as empty (not 0.0).
+        # However, ZOE *do* treat it as 0.0 when adding up;
+        # this is simplest to implement but could cause issues.
         assert values['corrected_covid_positive'] == 0
     else:
+        # factor == (corrected_covid_positive / predicted_covid_positive_count) *
+        #           (respondent_count * u_fraction / population)
         assert abs(values['factor'] -
                    (values['corrected_covid_positive'] / values['predicted_covid_positive_count']) *
                    (values['respondent_count'] * u_fraction / values['population'])) < 1e-11
 
-    # Based on the above, here's how you scale predicted_covid_positive_count
-    # up to the whole population.
+    if values['respondent_count'] == 0 or u_fraction == 0 or values['population'] == 0:
+        # So predicted_covid_positive_prob is linked to respondent_count,
+        # even though it can be higher (and it can be over 10 times the
+        # value of unhealthy_count).
+        assert values['predicted_covid_positive_prob'] == 0
+        assert values['corrected_covid_positive_prob'] == 0
+    else:
+        assert abs(values['predicted_covid_positive_prob'] / (values['respondent_count'] * u_fraction) -
+                   values['corrected_covid_positive_prob'] / values['population']) < 1e-11
+
+    # Following the pattern above, here's how you scale
+    # predicted_covid_positive_count up to the whole population.
     values['+ symptom_based'] = 0
     if values['predicted_covid_positive_count'] != 0:        
         values['+ symptom_based'] = (values['predicted_covid_positive_count'] *
@@ -230,7 +241,7 @@ def parse_values(row):
 def parse_file(infile):
     csv_in = csv.DictReader(infile)
     for row in csv_in:
-        keys = Keys(*(sys.intern(row[key]) for key in KEYS))
+        keys = Keys(*(sys.intern(row[key]) for key in KEY_FIELDS))
         try:
             values = parse_values(row)
         except AssertionError:
@@ -271,16 +282,23 @@ def main(infile, name):
     digest_age = {}
     # Nested dictionaries: (region, utla) -> date -> values
     digest_utla = {}
-
+    # (date, imd) -> values
     digest_imd = {}
+    # (date, age, imd) -> values
     digest_age_imd = {}
 
     # lad16cd's don't seem to be unique?  Doesn't matter for our purposes.
-    # (region, utla, lad, imd) -> lsoa_count.
+    # (region, utla, lad, imd) -> lsoa_count
     digest_lsoa = {}
+    # (region, utla, date) -> total population of strata in which
+    # corrected_covid_postive_count is well-defined, which requires
+    # unhealthy_unk_count > 0.  When there is no information,
+    # ZOE assume zero cases.
+    digest_utla_defined_pop = {}
+    # (region, date) -> defined_pop
+    digest_region_defined_pop = {}
 
     for (keys, values) in parse_file(infile):
-
         # The column labeled 'gender' obeys the rule defined below.
         # Note this means it is invariant by date.
         #
@@ -303,6 +321,24 @@ def main(infile, name):
                 sys.exit(1)
         # Get rid of it.
         del values['gender']
+
+        keys_utla_date = (keys.region, keys.UTLA19CD, keys.date)
+        v = digest_utla_defined_pop.get(keys_utla_date, None)
+        if v is None:
+            v = 0
+            digest_utla_defined_pop[keys_utla_date] = v
+        if values['unhealthy_unk_count'] > 0:
+            v += values['population']
+            digest_utla_defined_pop[keys_utla_date] = v
+
+        keys_region_date = (keys.region, keys.date)
+        v = digest_region_defined_pop.get(keys_region_date, None)
+        if v is None:
+            v = 0
+            digest_region_defined_pop[keys_region_date] = v
+        if values['unhealthy_unk_count'] > 0:
+            v += values['population']
+            digest_region_defined_pop[keys_region_date] = v
 
         v = digest_date_region.get(keys.date, None)
         if v is None:
@@ -357,6 +393,7 @@ def main(infile, name):
     outdir = f'out/prevalence_digest/{name}/'
     os.makedirs(outdir, exist_ok=True)
 
+    # TODO pivot table covid_rate, response_rate, u_fraction
     with open(outdir + 'age.csv', 'w') as outfile:
         csv_out = csv.writer(outfile)
         csv_out.writerow(['date', 'age_group'] + value_fields + ['+ response_rate'])
@@ -384,12 +421,16 @@ def main(infile, name):
 
     with open(outdir + 'region.csv', 'w') as outfile:
         csv_out = csv.writer(outfile)
-        csv_out.writerow(['date', 'region'] + value_fields)
+        csv_out.writerow(['date', 'region'] + value_fields +
+                         ['+ defined_population_fraction'])
         for (date, by_region) in digest_date_region.items():
             en = dict(ZERO_VALUES)
             uk = dict(ZERO_VALUES)
             for (region, values) in by_region.items():
-                csv_out.writerow([date, region] + list(values.values()))
+                key = (region, date)
+                defined_pop_fraction = digest_region_defined_pop[key] / values['population']
+                csv_out.writerow([date, region] + list(values.values()) +
+                                 [defined_pop_fraction])
                 add_values(uk, values)
                 if region not in ['Wales', 'Scotland', 'Northern Ireland']:
                     add_values(en, values)
@@ -435,40 +476,50 @@ def main(infile, name):
         for ((region, utla, lad, imd), lsoa_count) in digest_lsoa.items():
             csv_out.writerow([region, utla, lad, imd, lsoa_count])
 
-    # 8-day average, as used by official UTLA estimates.
-    with open(outdir + 'utla_8d_average.csv', 'w') as outfile:
+    def write_utla_average(N):
+        with open(f'{outdir}utla_{N}d_average.csv', 'w') as outfile:
+            csv_out = csv.writer(outfile)
+            csv_out.writerow(['region', 'UTLA19CD', 'date'] +
+                            value_fields +
+                            ['+ covid_rate',
+                             '+ covid_rate_lo', '+ covid_rate_hi'])
+            for ((region, utla), by_date) in digest_utla.items():
+                by_date = list(by_date.items())
+                for i in range(N-1, len(by_date)):
+                    totals = dict(ZERO_VALUES)
+                    for j in range(i-(N-1), i+1):
+                        add_values(totals, by_date[j][1])
+                    values = { key:value / N for (key, value) in totals.items() }
+
+                    values['+ covid_rate'] = values['corrected_covid_positive'] / values['population']
+                    # Note lack of u_fraction.  But this is what matches, sigh.
+                    # Also, calculating it *after* multiplying by factor sounds
+                    # like a big problem to me?
+                    (values['+ covid_rate_lo'],
+                     values['+ covid_rate_hi']) = (
+                        wilson(values['+ covid_rate'],
+                            values['respondent_count']))
+
+                    csv_out.writerow([region, utla, by_date[i][0]] + list(values.values()))
+
+    # 8-day average matches estimates on the official map and "watch list".
+    # This is an off-by-one error: it is documented as a 7 day average.
+    write_utla_average(8)
+
+    # As documented, 14-day average matches the local case graph in the app.
+    # (But I haven't checked exactly, e.g. it could be a 15-day average :-).
+    write_utla_average(14)
+
+    with open(outdir + 'utla.csv', 'w') as outfile:
         csv_out = csv.writer(outfile)
-        csv_out.writerow(['region', 'UTLA19CD', 'date'] +
-                         value_fields +
-                         ['+ covid_rate',
-                          '+ covid_rate_lo', '+ covid_rate_hi'])
+        csv_out.writerow(['region', 'UTLA19CD', 'date'] + value_fields +
+                         ['+ defined_population_fraction'])
         for ((region, utla), by_date) in digest_utla.items():
-            by_date = list(by_date.items())
-            
-            N=8
-            for i in range(N-1, len(by_date)):
-                totals = dict(ZERO_VALUES)
-                for j in range(i-(N-1), i+1):
-                    add_values(totals, by_date[j][1])
-                values = { key:value / N for (key, value) in totals.items() }
-
-                values['+ covid_rate'] = values['corrected_covid_positive'] / values['population']
-                # Note lack of u_fraction.  But this is what matches, sigh.
-                # Also, calculating it *after* multiplying by factor sounds
-                # like a big problem to me?
-                (values['+ covid_rate_lo'],
-                 values['+ covid_rate_hi']) = (
-                    wilson(values['+ covid_rate'],
-                           values['respondent_count']))
-
-                csv_out.writerow([region, utla, by_date[i][0]] + list(values.values()))
-
-#    with open('out/prevalence_digest/utla.csv', 'w') as outfile:
-#        csv_out = csv.writer(outfile)
-#        csv_out.writerow(['region', 'UTLA19CD', 'date'] + value_fields)
-#        for ((region, utla), by_date) in digest_utla.items():
-#            for (date, values) in by_date.items():
-#                csv_out.writerow([region, utla, date] + list(values.values()))
+            for (date, values) in by_date.items():
+                key = (region, utla, date)
+                defined_pop_fraction = digest_utla_defined_pop[key] / values['population']
+                csv_out.writerow([region, utla, date] + list(values.values()) +
+                                 [defined_pop_fraction])
 
 #     for ((region, utla), by_date) in digest_utla.items():
 #         for (date, values) in by_date.items():
