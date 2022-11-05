@@ -150,18 +150,26 @@ def parse_values(row):
     # Estimate of symptomatic prevalence in the population.  If you look at
     # corrected_prevalence_region_*.csv and add it up for a region, it matches
     # the official ZOE prevalence for that region.
+    # See output file: region.csv.
     #
-    # Although, arguably the date is off.  ZOE regional prevalence is
-    # calculated from ZOE regional incidence (see prevalence_from_incidence/).
-    # The date specified for ZOE regional incidence is publish date - 2,
-    # not publish date - 1.  Also, regional incidence is based on a 14-day
-    # average.
+    # Although, you could argue there's an issue with the dates.  ZOE regional
+    # prevalence is calculated from ZOE regional incidence
+    # (see prevalence_from_incidence/).  The date specified for ZOE regional
+    # incidence is publish date - 2, not publish date - 1.  Also, regional
+    # incidence is based on a 14-day average.
     #
     # If you average it over 8 (!) days for a UTLA, it matches
     # the estimates on the official ZOE map and "watch list".
+    # See output file: utla_8d_average.csv.
     #
     # Similarly if you look at corrected_prevalence_age_*.csv and add it up
-    # for an age group, it matches the official graphs of UK prevalence by age.
+    # for an age group, it matches the official graphs of UK prevalence rate
+    # by age.
+    # See output file: age_group_to_covid_rate.csv.
+    #
+    # (It's as if they endorse their stratification of P_S by region,
+    #  and to a lesser degree by age group, but they can't stratify P_S
+    #  by both at the same time?)
 
     # 'factor' is inf for Northern Ireland districts on date == '20220920',
     # when prevalence_history shows 0 for the region, and when
@@ -191,10 +199,6 @@ def parse_values(row):
     #
     # Corrected_prevalence_age_* does the same except with
     # (date, age_group).
-    #
-    # (It's as if they endorse their stratification of P_S by region,
-    #  and to a lesser degree by age group, but they can't stratify P_S
-    #  by both at the same time?)
     #
     # The only difference between corrected_prevalence_region_*
     # and corrected_prevalence_age_* are the values of
@@ -277,10 +281,10 @@ def main(infile, name):
         name = name[:-len('.csv')]
 
     # Nested dictionaries: date -> region -> values
-    digest_date_region = {}
-    # (date, age_group) -> values
+    digest_region = {}
+    # date -> age_group -> values
     digest_age = {}
-    # Nested dictionaries: (region, utla) -> date -> values
+    # (region, utla) -> date -> values
     digest_utla = {}
     # (date, imd) -> values
     digest_imd = {}
@@ -340,10 +344,10 @@ def main(infile, name):
             v += values['population']
             digest_region_defined_pop[keys_region_date] = v
 
-        v = digest_date_region.get(keys.date, None)
+        v = digest_region.get(keys.date, None)
         if v is None:
             v = {}
-            digest_date_region[keys.date] = v
+            digest_region[keys.date] = v
         v2 = v.get(keys.region)
         if v2 is None:
             v2 = dict(values)
@@ -351,13 +355,16 @@ def main(infile, name):
         else:
             add_values(v2, values)
 
-        keys_age = (keys.date, keys.age_group)
-        v = digest_age.get(keys_age, None)
+        v = digest_age.get(keys.date, None)
         if v is None:
-            v = dict(values)
-            digest_age[keys_age] = v
+            v = {}
+            digest_age[keys.date] = v
+        v2 = v.get(keys.age_group)
+        if v2 is None:
+            v2 = dict(values)
+            v[keys.age_group] = v2
         else:
-            add_values(v, values)
+            add_values(v2, values)
 
         keys_utla = (keys.region, keys.UTLA19CD)
         v = digest_utla.get(keys_utla, None)
@@ -393,37 +400,66 @@ def main(infile, name):
     outdir = f'out/prevalence_digest/{name}/'
     os.makedirs(outdir, exist_ok=True)
 
-    # TODO pivot table covid_rate, response_rate, u_fraction
+    first_by_age = next(iter(digest_age.values()))
+    age_groups = list(first_by_age.keys())
+
     with open(outdir + 'age.csv', 'w') as outfile:
         csv_out = csv.writer(outfile)
-        csv_out.writerow(['date', 'age_group'] + value_fields + ['+ response_rate'])
-        for ((date, age_group), values) in digest_age.items():
-            response_rate = values['respondent_count'] / values['population']
-            csv_out.writerow([date, age_group] + list(values.values()) + [response_rate])
+        csv_out.writerow(['date', 'age_group'] + value_fields +
+                         ['+ response_rate'])
+        for (date, by_age) in digest_age.items():
+            for (age_group, values) in by_age.items():
+                response_rate = values['respondent_count'] / values['population']
+                csv_out.writerow([date, age_group] + list(values.values()) + [response_rate])
+
+    with open(outdir + 'age_group_to_covid_rate.csv', 'w') as outfile:
+        csv_out = csv.writer(outfile)
+        csv_out.writerow(['date'] + age_groups)
+        for (date, by_age) in digest_age.items():
+            covid_rates = [values['corrected_covid_positive'] / values['population']
+                           for values in by_age.values()]
+            csv_out.writerow([date] + covid_rates)
+
+    with open(outdir + 'age_group_to_u_fraction.csv', 'w') as outfile:
+        csv_out = csv.writer(outfile)
+        csv_out.writerow(['date'] + age_groups)
+        for (date, by_age) in digest_age.items():
+            u_fractions = [values['unhealthy_unk_count'] / values['unhealthy_count']
+                           for values in by_age.values()]
+            csv_out.writerow([date] + u_fractions)
+
+    with open(outdir + 'age_group_to_response_rate.csv', 'w') as outfile:
+        csv_out = csv.writer(outfile)
+        csv_out.writerow(['date'] + age_groups)
+        for (date, by_age) in digest_age.items():
+            response_rates = [values['respondent_count'] / values['population']
+                              for values in by_age.values()]
+            csv_out.writerow([date] + response_rates)
 
     if name.startswith('corrected_prevalence_age_trend_'):
-        for ((date, age_group), values) in digest_age.items():
-            try:
-                if values['factor'] == float('inf'):
-                    continue
+        for (date, by_age) in digest_age.items():
+            for (age_group, values) in by_age.items():
+                try:
+                    if values['factor'] == float('inf'):
+                        continue
 
-                assert values['corrected_covid_positive'] <= values['population']
+                    assert values['corrected_covid_positive'] <= values['population']
 
-                assert abs(values['factor'] -
-                    (values['corrected_covid_positive'] / values['+ symptom_based'])) < 1e-11
+                    assert abs(values['factor'] -
+                        (values['corrected_covid_positive'] / values['+ symptom_based'])) < 1e-11
 
-                assert abs(values['factor_prob'] -
-                    (values['corrected_covid_positive'] / values['corrected_covid_positive_prob'])) < 1e-11
-            except AssertionError:
-                print ('Inconsistent values for age_group: ', age_group, date)
-                print (values)
-                raise
+                    assert abs(values['factor_prob'] -
+                        (values['corrected_covid_positive'] / values['corrected_covid_positive_prob'])) < 1e-11
+                except AssertionError:
+                    print ('Inconsistent values for age_group: ', age_group, date)
+                    print (values)
+                    raise
 
     with open(outdir + 'region.csv', 'w') as outfile:
         csv_out = csv.writer(outfile)
         csv_out.writerow(['date', 'region'] + value_fields +
                          ['+ defined_population_fraction'])
-        for (date, by_region) in digest_date_region.items():
+        for (date, by_region) in digest_region.items():
             en = dict(ZERO_VALUES)
             uk = dict(ZERO_VALUES)
             for (region, values) in by_region.items():
@@ -438,7 +474,7 @@ def main(infile, name):
             csv_out.writerow([date, 'UK'] + list(uk.values()))
 
     if name.startswith('corrected_prevalence_region_trend_'):
-        for (date, by_region) in digest_date_region.items():
+        for (date, by_region) in digest_region.items():
             for (region, values) in by_region.items():
                 try:
                     if values['factor'] == float('inf'):
@@ -476,8 +512,8 @@ def main(infile, name):
         for ((region, utla, lad, imd), lsoa_count) in digest_lsoa.items():
             csv_out.writerow([region, utla, lad, imd, lsoa_count])
 
-    def write_utla_average(N):
-        with open(f'{outdir}utla_{N}d_average.csv', 'w') as outfile:
+    def write_utla_average(name, N):
+        with open(name, 'w') as outfile:
             csv_out = csv.writer(outfile)
             csv_out.writerow(['region', 'UTLA19CD', 'date'] +
                             value_fields +
@@ -492,6 +528,7 @@ def main(infile, name):
                     values = { key:value / N for (key, value) in totals.items() }
 
                     values['+ covid_rate'] = values['corrected_covid_positive'] / values['population']
+                    # TODO comment:
                     # Note lack of u_fraction.  But this is what matches, sigh.
                     # Also, calculating it *after* multiplying by factor sounds
                     # like a big problem to me?
@@ -504,11 +541,11 @@ def main(infile, name):
 
     # 8-day average matches estimates on the official map and "watch list".
     # This is an off-by-one error: it is documented as a 7 day average.
-    write_utla_average(8)
+    write_utla_average(outdir + 'utla_8d_average.csv', 8)
 
     # As documented, 14-day average matches the local case graph in the app.
     # (But I haven't checked exactly, e.g. it could be a 15-day average :-).
-    write_utla_average(14)
+    write_utla_average(outdir + 'utla_14d_average.csv', 14)
 
     with open(outdir + 'utla.csv', 'w') as outfile:
         csv_out = csv.writer(outfile)
