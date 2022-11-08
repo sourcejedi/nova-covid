@@ -482,11 +482,11 @@ def main(infile, name):
 
                     assert values['corrected_covid_positive'] <= values['population']
 
-                    assert abs(values['factor_prob'] -
-                        (values['corrected_covid_positive'] / values['corrected_covid_positive_prob'])) < 1e-11
-
                     assert abs(values['factor'] -
                         (values['corrected_covid_positive'] / values['+ symptom_based'])) < 1e-11
+
+                    assert abs(values['factor_prob'] -
+                        (values['corrected_covid_positive'] / values['corrected_covid_positive_prob'])) < 1e-11
                 except AssertionError:
                     print ('Inconsistent values for region: ', region, date)
                     print (values)
@@ -539,24 +539,25 @@ def main(infile, name):
 
                     csv_out.writerow([region, utla, by_date[i][0]] + list(values.values()))
 
-    # 8-day average matches estimates on the official map and "watch list".
-    # This is an off-by-one error: it is documented as a 7 day average.
-    write_utla_average(outdir + 'utla_8d_average.csv', 8)
+    if name.startswith('corrected_prevalence_region_trend_'):
+        with open(outdir + 'utla.csv', 'w') as outfile:
+            csv_out = csv.writer(outfile)
+            csv_out.writerow(['region', 'UTLA19CD', 'date'] + value_fields +
+                             ['+ defined_population_fraction'])
+            for ((region, utla), by_date) in digest_utla.items():
+                for (date, values) in by_date.items():
+                    key = (region, utla, date)
+                    defined_pop_fraction = digest_utla_defined_pop[key] / values['population']
+                    csv_out.writerow([region, utla, date] + list(values.values()) +
+                                     [defined_pop_fraction])
 
-    # As documented, 14-day average matches the local case graph in the app.
-    # (But I haven't checked exactly, e.g. it could be a 15-day average :-).
-    write_utla_average(outdir + 'utla_14d_average.csv', 14)
+        # 8-day average matches estimates on the official map and "watch list".
+        # This is an off-by-one error: it is documented as a 7 day average.
+        write_utla_average(outdir + 'utla_8d_average.csv', 8)
 
-    with open(outdir + 'utla.csv', 'w') as outfile:
-        csv_out = csv.writer(outfile)
-        csv_out.writerow(['region', 'UTLA19CD', 'date'] + value_fields +
-                         ['+ defined_population_fraction'])
-        for ((region, utla), by_date) in digest_utla.items():
-            for (date, values) in by_date.items():
-                key = (region, utla, date)
-                defined_pop_fraction = digest_utla_defined_pop[key] / values['population']
-                csv_out.writerow([region, utla, date] + list(values.values()) +
-                                 [defined_pop_fraction])
+        # As documented, 14-day average matches the local case graph in the app.
+        # But I haven't checked exactly, e.g. it could be a 15-day average :-).
+        write_utla_average(outdir + 'utla_14d_average.csv', 14)
 
 #     for ((region, utla), by_date) in digest_utla.items():
 #         for (date, values) in by_date.items():
