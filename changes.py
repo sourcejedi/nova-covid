@@ -197,6 +197,7 @@ def changes(indir, prefix, outfile):
     prev_en_up_quirk = None
     prev_uk_lo_quirk = None
     prev_uk_up_quirk = None
+    prev_value_fraction = None
     for path in paths:
         print(path)
         name = path.name[prefix_len:-4]
@@ -354,6 +355,28 @@ def changes(indir, prefix, outfile):
                 uk_up_quirk = None
             f.seek(0)
 
+            value_fraction = None
+            read = csv.DictReader(f)
+            row = next(read, None)
+            assert row
+            date = row.get('date')
+            assert(date)
+            while date == start:
+                mid = row.get(mid_field)
+                assert mid
+                mid = float(mid)
+                if mid != 0:
+                    vf = (mid != int(mid))
+                    if value_fraction == None:
+                        value_fraction = vf
+                    else:
+                        if value_fraction != vf:
+                            value_fraction = 'mixed ?!'
+                row = next(read, None)
+                assert row
+                date = row.get('date')
+            f.seek(0)
+
             assert f.readline().rstrip() == head
             heads = head.split(',')
             date_field = 0
@@ -399,16 +422,19 @@ def changes(indir, prefix, outfile):
             outfile.write(f'{name}:  EN region-weighted: {en_maybe_weighted}\n')
             change = True
         if en_lo_quirk != prev_en_lo_quirk:
-            outfile.write(f'{name}:  suspect EN CI (lo): {en_lo_quirk}\n')
+            outfile.write(f'{name}:  Suspect EN CI (lo): {en_lo_quirk}\n')
             change = True
         if en_up_quirk != prev_en_up_quirk:
-            outfile.write(f'{name}:  suspect EN CI (up): {en_up_quirk}\n')
+            outfile.write(f'{name}:  Suspect EN CI (up): {en_up_quirk}\n')
             change = True
         if uk_lo_quirk != prev_uk_lo_quirk:
-            outfile.write(f'{name}:  suspect UK CI (lo): {uk_lo_quirk}\n')
+            outfile.write(f'{name}:  Suspect UK CI (lo): {uk_lo_quirk}\n')
             change = True
         if uk_up_quirk != prev_uk_up_quirk:
-            outfile.write(f'{name}:  suspect UK CI (up): {uk_up_quirk}\n')
+            outfile.write(f'{name}:  Suspect UK CI (up): {uk_up_quirk}\n')
+            change = True
+        if value_fraction != prev_value_fraction:
+            outfile.write(f'{name}:  Fractional value:   {value_fraction}\n')
             change = True
         prev_fields = fields
         prev_head = head
@@ -421,6 +447,7 @@ def changes(indir, prefix, outfile):
         prev_en_up_quirk = en_up_quirk
         prev_uk_lo_quirk = uk_lo_quirk
         prev_uk_up_quirk = uk_up_quirk
+        prev_value_fraction = value_fraction
         if change:
             outfile.write('\n')
 
