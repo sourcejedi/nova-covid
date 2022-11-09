@@ -51,6 +51,7 @@ def england(input_file, output_file):
     writer = csv.writer(output_file)
     writer.writerow(['date', 'active_cases'])
     dates = sorted(england.keys())
+    dates = england.keys()
     for date in dates:
         writer.writerow([date, england[date]])
 
@@ -64,6 +65,8 @@ paths.sort()
 for path in paths:
     filename = path.name
     out_path = outdir / filename
+    if out_path.exists():
+        continue
     with (path.open() as csvfile_in,
           out_path.open('w') as csvfile_out):
         england(csvfile_in, csvfile_out)

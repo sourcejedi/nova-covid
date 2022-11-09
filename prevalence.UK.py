@@ -34,6 +34,9 @@ indir = Path('download/prevalence_history/')
 paths = list(indir.glob('*.csv'))
 for path in paths:
     filename = path.name
+    out_path = outdir / filename
+    if out_path.exists():
+        continue
     with (path.open() as csvfile_in,
-         (outdir / filename).open('w') as csvfile_out):
+          out_path.open('w') as csvfile_out):
         uk(csvfile_in, csvfile_out)
