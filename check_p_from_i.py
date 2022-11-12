@@ -83,7 +83,7 @@ def check_prevalence_from_incidence(official_file, check_file,
 # Skip already-checked files
 os.makedirs('out', exist_ok=True)
 try:
-    with open('out/check.txt') as check_file:
+    with open('out/check_p_from_i.txt') as check_file:
         checked = set((line.rstrip() for line in check_file.readlines()))
 except OSError as e:
     if e.errno != errno.ENOENT:
@@ -154,9 +154,6 @@ paths = list(indir.glob(prefix + '*.csv'))
 paths.sort()
 paths.reverse()
 for path in paths:
-    if str(path) in checked:
-        continue
-
     datename = path.name[len(prefix):-4]
 
     # incidence history csv changed method one day after prevalence csv
@@ -170,13 +167,25 @@ for path in paths:
 
     check_name = f'{datename}.csv'
     check_path = checkdir / check_name
+    if str(check_path) in checked:
+        continue
+
     with (path.open() as official_file,
           check_path.open() as check_file):
         if check_prevalence_from_incidence(official_file, check_file,
                                            str(check_path), datename, 1e-8):
             checked.add(str(check_path))
 
-with open('out/check.txt', 'w') as check_file:
+# I haven't run prevalence_digest for all dates.
+# The input files are big and it takes time.
+indir = Path('download/prevalence_digest/')
+paths = list(indir.glob('*/'))
+paths.sort()
+for path in paths:
+    if str(path) in checked:
+        continue
+
+with open('out/check_p_from_i.txt', 'w') as check_file:
     for c in sorted(checked):
         check_file.write(c)
         check_file.write('\n')
