@@ -1,0 +1,137 @@
+# Selected changes in the covid-public-data files #
+
+This is an arbitrary selection for my own purposes, *not* a fully
+detailed list.  Changes include historical revisions detected by
+jump.py/jump.ods, and format changes detected by changes.py.  
+
+The files are described here:
+
+    https://sourcejedi.github.io/2022/01/31/zoe-covid-study.html
+
+For “method v2” etc, see:
+    
+    https://sourcejedi.github.io/2022/02/02/zoe-covid-study-part-2-methods.html
+
+
+We can see incidence_20200810.csv posted on 12/10/2020.  The numbers
+in the file name are the standardized form of the date 4 days earlier,
+i.e. 08/10/2020.
+
+The file contains time series of incidence for dates 05/12/20 through
+08/10/2020.  The given dates represent specimen dates, or more
+specifically the last day of a 14-day average.  (See links above).
+
+At the same time, retrospective files were published going back to
+incidence_20200570.csv.  New files are published daily.
+
+
+## By date of report ##
+
+14/01/21    Increased UK population from 66.362 million to 66.436 million.
+            Also split the Midlands and NE/Yorkshire.
+
+07/02/21    Files not updated this day. Files created retrospectively.
+            Zero historical revisions in next file (looking at days -4 to -34).
+
+09/02/21    First version of incidence_history_{date}.csv and
+            prevalence_history_{date}.csv files.  The dates in the names
+            of these files are usually the same as the publication date.
+
+23/02/21    *Method v2*
+
+12/05/21    *Method v3*
+            incidence_{date}.csv changes method one day earlier.
+            incidence_history_{date}.csv does not use v3, but continues with
+            method v2.
+
+08/06/21    "Incidence figures are now smoothed over a 7-day rolling window."
+            incidence_history continues showing previous method (v2),
+            and does not appear to be smoothed.
+
+21/07/21    *Method v4*
+            incidence_history_{date}.csv changes method one day later.
+
+07/10/21    *Method v5*
+
+30/10/21    Undocumented adjustment, ~0.5% increase of 2021 estimates.
+            This stands out most in prevalence_history.
+
+17/12/21    Use tests from up to 2 days ago, instead of up to 4 days ago.
+            prevalence_history was already doing this.
+
+31/01/22    The date given for the last prevalence estimate is now the report
+            date minus one, instead of the report date.
+            
+            Prevalence for NE/Yorks and East/West Midlands are no longer
+            apportioned using symptom-based prevalence.
+
+            (Detected using script in prevalence_from_incidence/
+             However if you make the report dates consistent, the “jump” for
+             the split regions does not stand out very much.  It surprised me 
+             this seems to work out so tidily.)
+
+            Changes noted in the PDF report:
+            "Added confidence intervals to prevalence estimates split
+            North East & Yorkshire and The Humber and Midlands and fixed end
+            date of the prevalence figures."
+
+11/02/22    prevalence_history_{date}.csv now includes confidence intervals.
+
+14/02/22    prevalence_history_{date}.csv now starts at 1/11/22.  (No "jump".)
+
+25/02/22    Files not updated this day. Files created retrospectively.
+            Near-zero historical revisions in next file (looking at days -4 to -34).
+26/02/22    Files not updated this day. Files created retrospectively.
+            Near-zero historical revisions in next file (looking at days -4 to -34).
+
+14/04/22    Undocumented adjustment, up to 1% higher estimates.
+            (Inputs published in incidence_{date}.csv appear unchanged)
+
+29/04/22    Beginning of weird 18-day pattern in comparisons.
+            Bad news: the distribution of “jump” values now has two peaks
+            (days with and without the pattern).
+            Good news: the higher peak appears quite narrow.
+
+14/05/22    change in incidence_history but not incidence??
+            
+27/05/22    Files not updated until 2340 this day.
+
+31/05/22    active_users reduced by 10,000 out of 410,000 (including for past dates).
+02/06/22    active_users reduced by 55,000 out of 395,000 (including for past dates).
+10/06/22    active_users reduced by 160,000 out of 330,000 (including for past dates).
+
+            "The new symptom reporting flow is available to 80% of App users
+            who consented to the ZOE Health Study. While we transition to this
+            new flow, COVID figures will be computed on the remaining 20% of
+            users. As a result, during the transition period, there may be
+            greater uncertainty around our COVID figures due to the smaller
+            sample size. We will provide a further update once we have fully
+            migrated the COVID figures to the new symptom reporting flow."
+
+22/06/22    active_users increased by 215,000 from 150,000 (including for past dates).
+
+            "From 22nd June, the new symptom reporting flow is available to
+            100% of App users who consented to the ZOE Health Study. We have
+            fully migrated the COVID figures to the new symptom reporting flow
+            and from this day, we compute our estimates on 100% of the
+            eligible user base, except for local prevalence figures which are
+            smoothed over two weeks and they will be gradually including more
+            users."
+
+03/07/22    The weird 18-day pattern appears to stop.
+
+08/07/22    Weird pattern every *19* days AND 1 in 19 is an outlier far below
+            the curve.  No such pattern found in inputs.  Perhaps this is a
+            smoothing method?  This jump is now removed; the incidence file
+            was replaced about an hour later.
+
+            incidence_history and prevalence_history for this day still show
+            the pattern.
+            
+            prevalence_history_20220708.csv does not match
+            out/prevalence_from_incidence_/20220706.csv
+
+25/07/22    Data files are now updated before 9 AM.
+
+            prevalence_history_20220725.csv does not match
+            out/prevalence_from_incidence_/20220723.csv
