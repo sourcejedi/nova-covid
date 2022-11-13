@@ -528,7 +528,6 @@ def main(infile, name):
                     values = { key:value / N for (key, value) in totals.items() }
 
                     values['+ covid_rate'] = values['corrected_covid_positive'] / values['population']
-                    # TODO comment:
                     # Note lack of u_fraction.  But this is what matches, sigh.
                     # Also, calculating it *after* multiplying by factor sounds
                     # like a big problem to me?
@@ -556,7 +555,10 @@ def main(infile, name):
         write_utla_average(outdir + 'utla_8d_average.csv', 8)
 
         # As documented, 14-day average matches the local case graph in the app.
-        # But I haven't checked exactly, e.g. it could be a 15-day average :-).
+        # Except that the app shifts everything back and then adds 6 further days.
+        # Perhaps the last day is based on an 8-day average, for example.
+        # The app does not show confidence intervals, although the backend does
+        # calculate confidence intervals using the same method as the watch list.
         write_utla_average(outdir + 'utla_14d_average.csv', 14)
 
 #     for ((region, utla), by_date) in digest_utla.items():
