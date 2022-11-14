@@ -286,12 +286,15 @@ def main(infile, name):
     digest_age = {}
     # (region, utla) -> date -> values
     digest_utla = {}
+    # (region, lad) -> date -> values
+    # Note ZOE data says there are 3 LAD's that belong to more than one UTLA.
+    # I assume they resolve this in the simplest possible way as implied here.
+    # I haven't checked, but it won't make much difference.
+    digest_lad = {}
     # (date, imd) -> values
     digest_imd = {}
     # (date, age, imd) -> values
     digest_age_imd = {}
-
-    # lad16cd's don't seem to be unique?  Doesn't matter for our purposes.
     # (region, utla, lad, imd) -> lsoa_count
     digest_lsoa = {}
     # (region, utla, date) -> total population of strata in which
@@ -371,6 +374,18 @@ def main(infile, name):
         if v is None:
             v = {}
             digest_utla[keys_utla] = v
+        v2 = v.get(keys.date, None)
+        if v2 is None:
+            v2 = dict(values)
+            v[keys.date] = v2
+        else:
+            add_values(v2, values)
+
+        keys_lad = (keys.region, keys.lad16cd)
+        v = digest_lad.get(keys_lad, None)
+        if v is None:
+            v = {}
+            digest_lad[keys_lad] = v
         v2 = v.get(keys.date, None)
         if v2 is None:
             v2 = dict(values)
@@ -512,8 +527,23 @@ def main(infile, name):
         for ((region, utla, lad, imd), lsoa_count) in digest_lsoa.items():
             csv_out.writerow([region, utla, lad, imd, lsoa_count])
 
-    def write_utla_average(name, N):
-        with open(name, 'w') as outfile:
+    # age_trend would give different results, which don't match anything.
+    # These are big files, so only bother if they're going to match.
+    if name.startswith('corrected_prevalence_region_trend_'):
+        with open(outdir + 'utla.csv', 'w') as outfile:
+            csv_out = csv.writer(outfile)
+            csv_out.writerow(['region', 'UTLA19CD', 'date'] + value_fields +
+                             ['+ defined_population_fraction'])
+            for ((region, utla), by_date) in digest_utla.items():
+                for (date, values) in by_date.items():
+                    key = (region, utla, date)
+                    defined_pop_fraction = digest_utla_defined_pop[key] / values['population']
+                    csv_out.writerow([region, utla, date] + list(values.values()) +
+                                     [defined_pop_fraction])
+
+        # 8-day average matches estimates on the official map and "watch list".
+        # This is an off-by-one error: it is documented as a 7 day average.
+        with open(outdir + 'utla_8d_average.csv', 'w') as outfile:
             csv_out = csv.writer(outfile)
             csv_out.writerow(['region', 'UTLA19CD', 'date'] +
                             value_fields +
@@ -521,6 +551,7 @@ def main(infile, name):
                              '+ covid_rate_lo', '+ covid_rate_hi'])
             for ((region, utla), by_date) in digest_utla.items():
                 by_date = list(by_date.items())
+                N=8
                 for i in range(N-1, len(by_date)):
                     totals = dict(ZERO_VALUES)
                     for j in range(i-(N-1), i+1):
@@ -538,28 +569,37 @@ def main(infile, name):
 
                     csv_out.writerow([region, utla, by_date[i][0]] + list(values.values()))
 
-    if name.startswith('corrected_prevalence_region_trend_'):
-        with open(outdir + 'utla.csv', 'w') as outfile:
-            csv_out = csv.writer(outfile)
-            csv_out.writerow(['region', 'UTLA19CD', 'date'] + value_fields +
-                             ['+ defined_population_fraction'])
-            for ((region, utla), by_date) in digest_utla.items():
-                for (date, values) in by_date.items():
-                    key = (region, utla, date)
-                    defined_pop_fraction = digest_utla_defined_pop[key] / values['population']
-                    csv_out.writerow([region, utla, date] + list(values.values()) +
-                                     [defined_pop_fraction])
-
-        # 8-day average matches estimates on the official map and "watch list".
-        # This is an off-by-one error: it is documented as a 7 day average.
-        write_utla_average(outdir + 'utla_8d_average.csv', 8)
-
         # As documented, 14-day average matches the local case graph in the app.
         # Except that the app shifts everything back and then adds 6 further days.
         # Perhaps the last day is based on an 8-day average, for example.
         # The app does not show confidence intervals, although the backend does
         # calculate confidence intervals using the same method as the watch list.
-        write_utla_average(outdir + 'utla_14d_average.csv', 14)
+        with open(outdir + 'lad_14d_average.csv', 'w') as outfile:
+            csv_out = csv.writer(outfile)
+            csv_out.writerow(['region', 'LAD16CD', 'date'] +
+                            value_fields +
+                            ['+ covid_rate',
+                             '+ covid_rate_lo', '+ covid_rate_hi'])
+            for ((region, lad), by_date) in digest_lad.items():
+                by_date = list(by_date.items())
+                N=14
+                for i in range(N-1, len(by_date)):
+                    totals = dict(ZERO_VALUES)
+                    for j in range(i-(N-1), i+1):
+                        add_values(totals, by_date[j][1])
+                    values = { key:value / N for (key, value) in totals.items() }
+
+                    values['+ covid_rate'] = values['corrected_covid_positive'] / values['population']
+                    # Note lack of u_fraction.  But this is what matches, sigh.
+                    # Also, calculating it *after* multiplying by factor sounds
+                    # like a big problem to me?
+                    (values['+ covid_rate_lo'],
+                     values['+ covid_rate_hi']) = (
+                        wilson(values['+ covid_rate'],
+                            values['respondent_count']))
+
+                    csv_out.writerow([region, lad, by_date[i][0]] + list(values.values()))
+
 
 #     for ((region, utla), by_date) in digest_utla.items():
 #         for (date, values) in by_date.items():
