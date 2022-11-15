@@ -4,8 +4,8 @@
 set -o xtrace
 
 dates="202[2-9]*"
-if [ ! -e download/incidence/incidence_20211231.csv ]; then
-    dates="202*"
+if [ ! -e download/lad_prevalence_map/lad_prevalence_map_20211231.csv ]; then
+   dates="202*"
 fi
 
 # Download ZOE files using gsutil from google-cloud-sdk.
@@ -25,6 +25,10 @@ get "gs://covid-public-data/csv/RevisedStats/prevalence_history_${dates}.csv" \
         'prevalence_history/' &&
 get "gs://covid-public-data/csv/RevisedStats/incidence_history_${dates}.csv" \
         'incidence_history/' &&
+get "gs://covid-public-data/csv/utla_prevalence_map_${dates}.csv" \
+        'utla_prevalence_map/' &&
+get "gs://covid-public-data/csv/lad_prevalence_map_${dates}.csv" \
+        'lad_prevalence_map/' &&
 
 get "gs://terraform-covid-website-data-prod/personalized_assets/backup_files/newly_sick_table_${dates}.csv" \
         'newly_sick_table/' &&
