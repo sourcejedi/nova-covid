@@ -1,0 +1,4 @@
+20200612:  Fields:              , UTLA19CD, UTLA19NM, respondent, population, active_cases, percentage
+20200612:  # regions:           216
+
+20221121

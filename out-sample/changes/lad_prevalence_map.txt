@@ -1,0 +1,4 @@
+20200612:  Fields:              , lad16cd, lad16nm, respondent, population, active_cases, percentage
+20200612:  # regions:           391
+
+20221121
