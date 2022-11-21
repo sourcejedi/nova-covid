@@ -91,8 +91,6 @@ incidence_20200570.csv.  New files are published daily.
             Bad news: the distribution of “jump” values now has two peaks
             (days with and without the pattern).
             Good news: the higher peak appears quite narrow.
-
-14/05/22    change in incidence_history but not incidence??
             
 27/05/22    Files not updated until 2340 this day.
 
