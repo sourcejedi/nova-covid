@@ -176,15 +176,6 @@ for path in paths:
                                            str(check_path), datename, 1e-8):
             checked.add(str(check_path))
 
-# I haven't run prevalence_digest for all dates.
-# The input files are big and it takes time.
-indir = Path('download/prevalence_digest/')
-paths = list(indir.glob('*/'))
-paths.sort()
-for path in paths:
-    if str(path) in checked:
-        continue
-
 with open('out/check_p_from_i.txt', 'w') as check_file:
     for c in sorted(checked):
         check_file.write(c)
