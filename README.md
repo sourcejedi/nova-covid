@@ -44,7 +44,7 @@ Software requirements:
 
 `logged-unwell.*`. Graph some raw daily totals, manually copied from from the daily reports.
 
-`newly_sick_table.*`. "Daily percentage of contributors who report new symptoms, with or without a positive COVID test result", per region.  The data files for this are not in the covid-public-data bucket. `fetch.sh` downloads them from the app backend.  I only write this sort of thing [when I have a reason to](https://twitter.com/sourcejedi/status/1557730035338842112).
+`newly_sick_table.*`. "Daily percentage of contributors who report new symptoms, with or without a positive COVID test result", per region.  The data files for this are not in the covid-public-data bucket.  `fetch.sh` downloads them from the app backend.  This was for the investigation in [ZOE Covid estimates and the 3 day bug](https://sourcejedi.github.io/2022/08/24/zoe-covid-3-day-bug.html).
 
 `wilson.py` + `wilson.ods`. Calculate the Wilson score, to reproduce confidence intervals used in method v1, v2, and v3 (!).
 
