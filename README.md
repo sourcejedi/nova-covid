@@ -1,18 +1,23 @@
-ZOE has run for two years, and counting.  I built up a number of scripts to keep an eye on them.  This was my new version ("nova"), to make some cleaner and more sharable scripts.
+ZOE have run a COVID study for two years and counting.  I wrote some scripts to keep an eye on them.  This is my new version ("nova") with cleaner, more sharable scripts.
 
-(I still use the old stuff.  And I still use spreadsheets for convenient graphs etc.  But the cleanup definitely helped).
+(Admittedly, I still use other scripts.  And I still use spreadsheets for convenient graphs etc).
+
+See also:
 
  * [ZOE Covid Study - the public data files][blog-1]
  * [ZOE Covid Study - part 2 - the method][blog-2]
  * [ZOE Covid Study - confidence intervals][blog-3]
- * [Failure to reproduce calculation of prevalence from incidence used in a scientific paper by ZOE Covid Study][PubPeer]
+ * [Failure to reproduce the calculation of prevalence from incidence in a scientific paper by ZOE Covid Study][PubPeer]
+   * [Source code][prevalence_from_incidence]
 
 [blog-1]: https://sourcejedi.github.io/2022/01/31/zoe-covid-study.html
 [blog-2]: https://sourcejedi.github.io/2022/02/02/zoe-covid-study-part-2-methods.html
 [blog-3]: https://sourcejedi.github.io/2022/02/27/zoe-covid-confidence-intervals.html
 [PubPeer]: https://pubpeer.com/publications/3C823DD588CE2A33BE78AD80E9CCDD
+[prevalence_from_incidence]: https://github.com/sourcejedi/nova-covid/prevalence_from_incidence/
 
 Software requirements:
+
  * Linux/Unix
  * python3
  * gsutil. See first blog post above.
@@ -31,7 +36,11 @@ Software requirements:
 
 `prevalence.England.py` + `prevalence.UK.py`. Add up the prevalences for the England / UK regions.
 
-`prevalence_from_incidence/`.  Reproduce the method ZOE use to estimate prevalence from their incidence figures.  See `README.md` in this directory.
+`prevalence_from_incidence/README.md`. Failure to reproduce the calculation of prevalence from incidence in a scientific paper by ZOE Covid Study.
+
+`prevalence_from_incidence.py`. Reproduce the method ZOE use to estimate prevalence from their incidence figures.
+
+`check_p_from_i.py`. Check prevalence calculation against the ZOE files, where possible.
 
 `logged-unwell.*`. Graph some raw daily totals, manually copied from from the daily reports.
 

@@ -18,6 +18,8 @@ See [Detecting COVID-19 infection hotspots in England using large-scale self-rep
 
 [pubpeer]: https://pubpeer.com/publications/3C823DD588CE2A33BE78AD80E9CCDD
 
+This directory is a reference for the PubPeer comment only.  For further work, see ../prevalence_from_incidence.py and ../check_p_from_i.py.
+
 
 ## Method to re-make the graphs
 

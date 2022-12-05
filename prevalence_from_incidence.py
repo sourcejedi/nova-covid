@@ -1,12 +1,11 @@
 #!/usr/bin/python3
-# Copy of prevalence_from_incidence/prevalence.py
-# Hacked to calculate for all regions.
+# Based on prevalence_from_incidence/prevalence.py
+# Now calculates for all regions and all available input files.
 #
-# See also:
-#  * Comments at the top of prevalence_from_incidence/prevalence.py
-#  * check.py code for out/prevalence_from_incidence_/ and
-#    out/prevalence_from_incidence_history_/
-#  * jumps.txt
+# Relevant documentation:
+#  * Extended comments at the top of the original script.
+#  * More recent exceptions defined in the code here: check_p_from_i.py
+#  * Comments in jump.txt
 
 import csv
 import math
