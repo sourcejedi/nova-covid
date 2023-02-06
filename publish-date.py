@@ -43,6 +43,6 @@ def publish_date(indir, prefix, out_en, out_uk):
             out_uk.write(line)
 
 indir = Path('download/incidence/')
-with (open('out/publish-date.incidence.England.v5.csv', 'wb') as out_en,
-      open('out/publish-date.incidence.UK.v5.csv', 'wb') as out_uk):
+with (open('out/publish-date.incidence.England.v5+6.csv', 'wb') as out_en,
+      open('out/publish-date.incidence.UK.v5+6.csv', 'wb') as out_uk):
     publish_date(indir, 'incidence_', out_en, out_uk)

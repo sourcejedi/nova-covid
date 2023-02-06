@@ -6,14 +6,14 @@ class PublishDate:
     __slots__ = ('out_uk', 'out_en')
     def __init__(self):
         self.out_uk = [
-            open('out/publish-date.incidence.UK.v5.csv', 'wb'),
-            open('out/publish-date-1.incidence.UK.v5.csv', 'wb'),
-            open('out/publish-date-2.incidence.UK.v5.csv', 'wb')
+            open('out/publish-date.incidence.UK.v5+6.csv', 'wb'),
+            open('out/publish-date-1.incidence.UK.v5+6.csv', 'wb'),
+            open('out/publish-date-2.incidence.UK.v5+6.csv', 'wb')
         ]
         self.out_en = [
-            open('out/publish-date.incidence.England.v5.csv', 'wb'),
-            open('out/publish-date-1.incidence.England.v5.csv', 'wb'),
-            open('out/publish-date-2.incidence.England.v5.csv', 'wb')
+            open('out/publish-date.incidence.England.v5+6.csv', 'wb'),
+            open('out/publish-date-1.incidence.England.v5+6.csv', 'wb'),
+            open('out/publish-date-2.incidence.England.v5+6.csv', 'wb')
         ]
         
     def __enter__(self):
