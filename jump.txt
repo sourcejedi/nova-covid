@@ -59,6 +59,7 @@ incidence_20200570.csv.  New files are published daily.
 17/12/21    Use tests from up to 2 days ago, instead of up to 4 days ago.
             prevalence_history was already doing this.
 
+
 31/01/22    The date given for the last prevalence estimate is now the report
             date minus one, instead of the report date.
             
@@ -133,3 +134,23 @@ incidence_20200570.csv.  New files are published daily.
 
             prevalence_history_20220725.csv does not match
             out/prevalence_from_incidence_/20220723.csv
+
+27/12/22    Files not updated this day. Files created retrospectively.
+            Near-zero historical revisions in next file (looking at days -4 to -58).
+28/12/22    Files not updated this day. Files created retrospectively.
+            Near-zero historical revisions in next file (looking at days -4 to -58).
+
+
+12/01/23    Files not updated this day. Files created retrospectively.
+            Small "jump" in these files.
+
+29/01/23    The files published on this day were retroactively overwritten on
+            02/01/23.  With big changes, presumably because it used method v6
+            (below).  Accidents happen.
+
+03/02/23    *Method v6*
+
+            See https://health-study.joinzoe.com/blog/covid-estimates-updated
+
+05/02/23    Perhaps a smaller undocumented "aftershock", from changing to
+            method v6?
