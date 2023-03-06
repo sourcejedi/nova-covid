@@ -2,9 +2,15 @@
 from pathlib import Path
 import mmap
 
-def publish_date(indir, prefix, out_en, out_uk):
+def publish_date(indir, prefix,
+                 out_en5, out_uk5,
+                 out_en6, out_uk6):
+
     paths = list(indir.glob(prefix + '*.csv'))
     paths.sort()
+
+    out_en = out_en5
+    out_uk = out_uk5
 
     for path in paths:
         # Use all files after method change v5
@@ -12,6 +18,13 @@ def publish_date(indir, prefix, out_en, out_uk):
             continue
         # Header line
         if path.name == 'incidence_20211003.csv':
+            with path.open('rb') as infile:
+                header = next(infile)
+                out_en.write(header)
+                out_uk.write(header)
+        if path.name == 'incidence_20230201.csv':
+            out_en = out_en6
+            out_uk = out_uk6
             with path.open('rb') as infile:
                 header = next(infile)
                 out_en.write(header)
@@ -43,6 +56,10 @@ def publish_date(indir, prefix, out_en, out_uk):
             out_uk.write(line)
 
 indir = Path('download/incidence/')
-with (open('out/publish-date.incidence.England.v5+6.csv', 'wb') as out_en,
-      open('out/publish-date.incidence.UK.v5+6.csv', 'wb') as out_uk):
-    publish_date(indir, 'incidence_', out_en, out_uk)
+with (open('out/publish-date.incidence.England.v5.csv', 'wb') as out_en5,
+      open('out/publish-date.incidence.England.v6.csv', 'wb') as out_en6,
+      open('out/publish-date.incidence.UK.v5.csv', 'wb') as out_uk5,
+      open('out/publish-date.incidence.UK.v6.csv', 'wb') as out_uk6):
+    publish_date(indir, 'incidence_',
+                 out_en5, out_uk5,
+                 out_en6, out_uk6)
