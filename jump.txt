@@ -140,9 +140,10 @@ incidence_20200570.csv.  New files are published daily.
 28/12/22    Files not updated this day. Files created retrospectively.
             Near-zero historical revisions in next file (looking at days -4 to -58).
 
+01/01/23    Moderate "jump".
 
 12/01/23    Files not updated this day. Files created retrospectively.
-            Small "jump" in these files.
+            Small "jump".
 
 29/01/23    The files published on this day were retroactively overwritten on
             02/01/23.  With big changes, presumably because it used method v6
@@ -152,5 +153,11 @@ incidence_20200570.csv.  New files are published daily.
 
             See https://health-study.joinzoe.com/blog/covid-estimates-updated
 
-05/02/23    Perhaps a smaller undocumented "aftershock", from changing to
-            method v6?
+05/02/23    Moderate "jump".  Perhaps a smaller undocumented "aftershock",
+            from changing to method v6?
+12/02/23    Small "jump".
+
+24/02/23    Files not updated this day. Files created retrospectively.
+            Small "jump".
+25/02/23    Files not updated this day. Files created retrospectively.
+            Unusually low historical revisions (looking at days -4 to -58).
