@@ -1,0 +1,13 @@
+East Midlands 6697 497 6.91 %
+East of England 12440 876 6.58 %
+London 12505 882 6.59 %
+North East 3063 203 6.22 %
+North West 8705 616 6.61 %
+Northern Ireland 651 47 6.73 %
+Scotland 6338 492 7.20 %
+South East 22622 1491 6.18 %
+South West 13283 969 6.80 %
+Wales 5605 379 6.33 %
+West Midlands 6908 475 6.43 %
+Yorkshire and The Humber 6973 530 7.06 %
+TOTAL 105790 7457 6.58 %

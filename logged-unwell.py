@@ -82,7 +82,15 @@ with open('out/logged-unwell.csv', 'w') as outfile:
 
 
 import os
-rc = os.system('head -n1 out/logged-unwell.csv > out/logged-unwell.England.csv')
-assert rc == 0
-rc = os.system('grep ,England, out/logged-unwell.csv >> out/logged-unwell.England.csv')
-assert rc == 0
+import sys
+def shell(script):
+    rc = os.system(script)
+    if rc != 0:
+        print(script)
+        sys.exit(1)
+
+shell('head -n1 out/logged-unwell.csv > out/logged-unwell.England.csv')
+shell('grep ,England, out/logged-unwell.csv >> out/logged-unwell.England.csv')
+
+shell('head -n1 out/logged-unwell.csv > out/logged-unwell.Scotland.csv')
+shell('grep ,Scotland, out/logged-unwell.csv >> out/logged-unwell.Scotland.csv')
