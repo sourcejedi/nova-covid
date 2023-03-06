@@ -4,7 +4,7 @@
 set -o xtrace
 
 dates="202[3-9]*"
-if [ ! -e download/lad_prevalence_map/lad_prevalence_map_20211231.csv ]; then
+if [ ! -e download/lad_prevalence_map/lad_prevalence_map_20221231.csv ]; then
    dates="202*"
 fi
 
