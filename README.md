@@ -28,11 +28,15 @@ Software requirements:
 
 `fetch.sh`. Download some ZOE data files (~1GB).
 
-`publish-date.py` + `publish-date.incidence.England.v5.ods`. Graph the ZOE data (England) by publish date.
+`split-region.py` + `incidence.UK.*.ods`. Graph the ZOE data (UK) by nominal date.  (Like "specimen date").
+
+`publish-date.py` + `publish-date.incidence.UK.*.ods`. DEPRECATED. Graph the ZOE data (UK) by publish date.
 
 `changes.sh`. Find when ZOE data files changed format etc.
 
 `jump.py` + `jump.ods`. Look for "jumps", that can suggest a change in the method.
+
+`publish-date-8.py` + `publish-date-8.ods`. Look at retrospective changes over the last 7 days, e.g. delayed PCR results.
 
 `prevalence.England.py` + `prevalence.UK.py`. Add up the prevalences for the England / UK regions.
 
