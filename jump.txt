@@ -146,7 +146,7 @@ incidence_20200570.csv.  New files are published daily.
             Small "jump".
 
 29/01/23    The files published on this day were retroactively overwritten on
-            02/01/23.  With big changes, presumably because it used method v6
+            02/02/23.  With big changes, seemingly because it used method v6
             (below).  Accidents happen.
 
 03/02/23    *Method v6*
@@ -161,3 +161,27 @@ incidence_20200570.csv.  New files are published daily.
             Small "jump".
 25/02/23    Files not updated this day. Files created retrospectively.
             Unusually low historical revisions (looking at days -4 to -58).
+
+
+12/03/23    Large "jump".  Estimates increased retrospectively by about 9%.
+
+
+17/03/23    In the files released at 7AM, the incidence series jumps up
+            by about 28% on the last day.
+
+            The files were revised at 5PM, removing this jump in incidence.
+
+            The prevalence data file was not revised.  So that is still based
+            on the incidence series with the 28% jump.
+
+19/03/23    The incidence series jumps up by about 28% on the third-from-last
+            day.  Just like the files released at 7AM on 17/03/23.
+            We are now in the weekend (Sunday).
+
+20/03/23    In the files released at 7AM, the incidence series jumps up
+            by about 28% on the third-from-last day.
+
+            The files were revised at 5PM, removing this jump in incidence.
+
+            The prevalence data file was not revised.  So that is still based
+            on the incidence series with the 28% jump.

@@ -102,14 +102,27 @@ paths.reverse()
 for path in paths:
     datename = path.name[len(prefix):-4]
 
-    # Doesn't match on these dates.
-    #
-    # On 20220708, there was a weird pattern in incidence which was
-    # removed after a short time.  Maybe prevalence wasn't regenerated.
-    #
-    # 20220725 is when the data files start being updated before 9 AM.
-    # Perhaps there was some teething problem.
-    if datename in ['20220725', '20220708']:
+    # prevalence csv does not match incidence csv on these dates:
+    mismatches = [
+        # incidence csv changed method one day before prevalence csv
+        '20210511',
+        # A weird pattern in incidence, which was removed after a short time.
+        # Maybe prevalence wasn't regenerated.
+        '20220708',
+        # The data files start being updated before 9 AM.
+        # So perhaps there were some teething problem.
+        '20220725',
+        # incidence files published on this day were retroactively overwritten
+        # on 2023-02-02.  With big changes, seemingly because it was using the
+        # method v6 introduced on 2023-02-03.  Accidents happen.
+        '20230129',
+        # incidence file was revised significantly in the afternoon,
+        # but they failed to regenerate the prevalence file.
+        '20230317',
+        # incidence file revised in the afternoon, to remove large jump.
+        '20230320',
+    ]
+    if datename in mismatches:
        continue
 
     # offset between dates in filenames
@@ -128,11 +141,6 @@ for path in paths:
         tolerance = 15
     else:
         tolerance = 1e-8
-
-    # incidence csv changed method one day before prevalence csv
-    # so they do not match.
-    if date == '20210507':
-        continue
 
     check_name = date + '.csv'
     check_path = checkdir / check_name
