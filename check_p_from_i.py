@@ -18,12 +18,12 @@ def read_prevalence(infile):
     for row in csv_in:
         region = row['region']
         date = row['date']
-        incidence = float(row.get('active_cases'))
+        prevalence = float(row.get('active_cases'))
         v = regions.get(region, None)
         if v is None:
             v = []
             regions[region] = v
-        v.append(incidence)
+        v.append(prevalence)
         if len(v) > len(dates):
             dates.append(date)
         else:
