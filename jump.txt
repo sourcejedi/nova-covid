@@ -185,3 +185,8 @@ incidence_20200570.csv.  New files are published daily.
 
             The prevalence data file was not revised.  So that is still based
             on the incidence series with the 28% jump.
+
+22/03/23    The incidence series jumps up by about 28% on the third-from-last
+            day.  Just like the files released at 7AM on 17/03/23.
+            The jump is not present in the following days' files.
+
