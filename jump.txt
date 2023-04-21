@@ -1,6 +1,6 @@
 # Selected changes in the covid-public-data files #
 
-This is an arbitrary selection for my own purposes, *not* a fully
+This is an arbitrary selection for my own purposes.  It is not a fully
 detailed list.  Changes include historical revisions detected by
 jump.py/jump.ods, and format changes detected by changes.py.  
 
@@ -13,9 +13,9 @@ For “method v2” etc, see:
     https://sourcejedi.github.io/2022/02/02/zoe-covid-study-part-2-methods.html
 
 
-We can see incidence_20200810.csv posted on 12/10/2020.  The numbers
-in the file name are the standardized form of the date 4 days earlier,
-i.e. 08/10/2020.
+We can see incidence_20200810.csv was posted on 12/10/2020.  The
+numbers in the file name were the standardized form of the date 4 days
+earlier, i.e. 08/10/2020.
 
 The file contains time series of incidence for dates 05/12/20 through
 08/10/2020.  The given dates represent specimen dates, or more
@@ -149,44 +149,72 @@ incidence_20200570.csv.  New files are published daily.
             02/02/23.  With big changes, seemingly because it used method v6
             (below).  Accidents happen.
 
+
 03/02/23    *Method v6*
 
             See https://health-study.joinzoe.com/blog/covid-estimates-updated
 
-05/02/23    Moderate "jump".  Perhaps a smaller undocumented "aftershock",
-            from changing to method v6?
-12/02/23    Small "jump".
+            The last comparable day is about 50% of the previous estimate.
+
+            If you graph this time series as a percentage of the time series
+            from the previous day: over a certain 12 weeks it goes from 100%,
+            to under 70%.  It is not a smooth line, but a staircase.
+
+            Each step down occurs on the "reference day" of the weekly ONS CIS
+            release.  Steps are visible on reference days 16/12/21 through
+            23/11/22.
+
+            This was useful for transparency, or at least "reverse
+            engineering".  However, it does introduce unnatural jumps when you
+            graph the infections.
+
+
+05/02/23    Estimates decreased retrospectively by about 6%.
+            Steps are visible on ONS reference days 2/12/22 and 6/12/22.
+
+12/02/23    Estimates increased retrospectively by about 0.7%.
+            A step is visible on ONS reference day 25/12/22.
 
 24/02/23    Files not updated this day. Files created retrospectively.
             Small "jump".
 25/02/23    Files not updated this day. Files created retrospectively.
             Unusually low historical revisions (looking at days -4 to -58).
 
+12/03/23    Estimates increased retrospectively by about 9%.
+            Steps are visible on ONS reference days 31/12/22,
+            07/01/23, 14/01/23, 21/01/23.
 
-12/03/23    Large "jump".  Estimates increased retrospectively by about 9%.
+            If you look very closely, you can see steps on many earlier ONS
+            reference days - many more than would be expected by chance.
 
 
 17/03/23    In the files released at 7AM, the incidence series jumps up
-            by about 28% on the last day.
+            by about 28% on the last day (15/03/23).
+
+	    In the daily infections PDF file, the jumps affect the age groups
+            0-17, 18-34, and 35-54 only.
 
             The files were revised at 5PM, removing this jump in incidence.
+            If you look very closely at the changes, you can see steps on ONS
+            reference days 16/12/21 through 21/01/23.
 
             The prevalence data file was not revised.  So that is still based
             on the incidence series with the 28% jump.
 
-19/03/23    The incidence series jumps up by about 28% on the third-from-last
-            day.  Just like the files released at 7AM on 17/03/23.
+19/03/23    The incidence series jumps up by about 28% on 15/03/23.
+            Just like the files released at 7AM on 17/03/23.
             We are now in the weekend (Sunday).
 
 20/03/23    In the files released at 7AM, the incidence series jumps up
-            by about 28% on the third-from-last day.
+            by about 28% on 15/03/23.
 
             The files were revised at 5PM, removing this jump in incidence.
+            If you look very closely at the changes, you can see steps on ONS
+            reference days 16/12/21 through 21/01/23.
 
             The prevalence data file was not revised.  So that is still based
             on the incidence series with the 28% jump.
 
-22/03/23    The incidence series jumps up by about 28% on the third-from-last
-            day.  Just like the files released at 7AM on 17/03/23.
+22/03/23    The incidence series jumps up by about 28% on 15/03/23.
             The jump is not present in the following days' files.
 
