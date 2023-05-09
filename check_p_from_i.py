@@ -121,6 +121,9 @@ for path in paths:
         '20230317',
         # incidence file revised in the afternoon, to remove large jump.
         '20230320',
+        # files uploaded outside usual sequence - prevalence on 2023-05-08,
+        # corresponding incidence on 2023-05-09.  data could have changed.
+        '20230505',
     ]
     if datename in mismatches:
        continue
