@@ -218,3 +218,13 @@ incidence_20200570.csv.  New files are published daily.
 22/03/23    The incidence series jumps up by about 28% on 15/03/23.
             The jump is not present in the following days' files.
 
+
+03/05/23
+04/05/23
+05/05/23    Incidence estimates are not updated.
+
+...         Some flailing occurs.
+
+08/05/23
+09/05/23    Files are caught up retrospectively.
+
