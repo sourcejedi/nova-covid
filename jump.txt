@@ -228,3 +228,15 @@ incidence_20200570.csv.  New files are published daily.
 08/05/23
 09/05/23    Files are caught up retrospectively.
 
+21/06/03
+22/06/23    Files not updated.
+
+...         Repeated flailing.
+
+            ZOE: "The formulas simply don't have enough data to be able to make an accurate calculation.  We are really sorry about this!  Our scientists are working on developing a solution, but we are a small team and these things do take a little time to develop."
+
+            https://web.archive.org/web/20230724092730/https://twitter.com/SoniaMills21/status/1677371669462102016
+
+20/07/23    Files are caught up retrospectively.
+
+            No clarification about how an 'accurate calculation' could now be made, including for the affected day(s).  Or how they might have found additional data for them.
